@@ -1,0 +1,6 @@
+[submodule "lib/ObjLoader"]
+	path = lib/ObjLoader
+	url = git@github.com:rikkit/ObjLoader.git
+[submodule "lib/inflatable-toolkit"]
+	path = lib/inflatable-toolkit
+	url = git@github.com:inflatablefriends/inflatable-toolkit.git
