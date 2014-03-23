@@ -13,14 +13,13 @@ namespace IF.Ray.WinRT.Models
         public IList<Group> Groups { get; set; }
         public IList<Material> Materials { get; set; }
 
-        protected Shape()
-        {
-
-        }
     }
 
     public class Cube : Shape
     {
+    }
 
+    public class Cylinder : Shape
+    {
     }
 }

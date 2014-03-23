@@ -43,6 +43,10 @@ namespace IF.Ray.WinRT.Models
             {
                 return "cube.obj";
             }
+            else if (type == typeof (Cylinder))
+            {
+                return "cylinder.obj";
+            }
             else
             {
                 throw new InvalidOperationException(string.Format("Shape {0} isnae supported", type));

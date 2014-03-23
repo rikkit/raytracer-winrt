@@ -16,8 +16,8 @@
         
         <controls:Direct3DUserControl x:Name="D3DUserControl"
                                       Grid.Column="1"
-                                      Width="400"
-                                      Height="400"
+                                      Width="600"
+                                      Height="600"
                                       RenderTransformOrigin="0.5,0.5"/>
         
         <StackPanel Grid.Column="0"
@@ -30,13 +30,37 @@
                     Orientation="Horizontal"
                     ValueChanged="ScaleSlider_OnValueChanged"
                     StepFrequency="0.01"/>
-            <Slider x:Name="RotateSlider"
+            <Slider x:Name="RotationXSlider"
+                    Header="X Rotation"
+                    Value="0"
+                    Minimum="-3.2"
+                    Maximum="3.2"
+                    Orientation="Horizontal"
+                    ValueChanged="OnRotationSliderChanged"
+                    StepFrequency="0.01"/>
+            <Slider x:Name="RotationYSlider"
+                    Header="Y Rotation"
+                    Value="0"
+                    Minimum="-3.2"
+                    Maximum="3.2"
+                    Orientation="Horizontal"
+                    ValueChanged="OnRotationSliderChanged"
+                    StepFrequency="0.01"/>
+            <Slider x:Name="RotationZSlider"
+                    Header="Z Rotation"
+                    Value="0"
+                    Minimum="-3.2"
+                    Maximum="3.2"
+                    Orientation="Horizontal"
+                    ValueChanged="OnRotationSliderChanged"
+                    StepFrequency="0.01"/>
+            <!--<Slider x:Name="RotateSlider"
                     Header="Rotate"
                     Value="10"
                     Minimum="0"
                     Maximum="360"
                     ValueChanged="ScaleSlider_OnValueChanged"
-                    StepFrequency="1"/>
+                    StepFrequency="1"/>-->
         </StackPanel>
     </Grid>
 </Page>

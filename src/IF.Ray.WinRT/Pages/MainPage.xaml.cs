@@ -21,11 +21,16 @@ namespace IF.Ray.WinRT.Pages
             if (D3DUserControl != null && ScaleSlider != null)
             {
                 var transform = new CompositeTransform();
-                transform.Rotation = RotateSlider.Value;
+                //transform.Rotation = RotateSlider.Value;
                 transform.ScaleX = ScaleSlider.Value;
                 transform.ScaleY = ScaleSlider.Value;
                 D3DUserControl.RenderTransform = transform;
             }
+        }
+
+        private void OnRotationSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            D3DUserControl.UpdateRotation((float)RotationXSlider.Value, (float)RotationYSlider.Value, (float)RotationZSlider.Value);
         }
     }
 }
