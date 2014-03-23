@@ -20,15 +20,15 @@ namespace IF.Ray.WinRT.Models
             get { return _shapes.Count; }
         }
 
-        public Vector3 Origin { get; private set; }
+        public Vector4 Origin { get; private set; }
 
         public Scene()
         {
-            Origin = new Vector3(0,0,0);
+            Origin = new Vector4(0, 0, 0, 0);
             _shapes = new List<SceneBinding>();
         }
 
-        public void AddShape(Shape shape, Vector3 position)
+        public void AddShape(Shape shape, Vector4 position)
         {
             var binding = new SceneBinding(shape, position);
             _shapes.Add(binding);

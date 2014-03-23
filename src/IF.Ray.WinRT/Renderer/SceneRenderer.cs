@@ -34,8 +34,10 @@ namespace IF.Ray.WinRT.Renderer
             _scene = new Scene();
             var shapeFactory = new ShapeFactory();
             var shape = shapeFactory.GetShape<Cube>();
+            var shape2 = shapeFactory.GetShape<Cube>();
 
-            _scene.AddShape(shape, _scene.Origin);
+            _scene.AddShape(shape, new Vector4(-5, -5, -5, 1));
+            _scene.AddShape(shape2, _scene.Origin);
 
             foreach (var binding in _scene.Bindings)
             {

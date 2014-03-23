@@ -14,7 +14,7 @@ namespace IF.Ray.WinRT.Models
         private const int FaceVectorCount = 6;
 
         public Shape Shape { get; set; }
-        public Vector3 Position { get; set; }
+        public Vector4 Position { get; set; }
         public VertexBufferBinding Dx3VertexBufferBinding { get; private set; }
         public VertexShader Dx3VertexShader { get; private set; }
         public PixelShader Dx3PixelShader { get; private set; }
@@ -22,7 +22,7 @@ namespace IF.Ray.WinRT.Models
 
         public int VertexBufferCount { get; private set; }
 
-        public SceneBinding(Shape shape, Vector3 position)
+        public SceneBinding(Shape shape, Vector4 position)
         {
             Shape = shape;
             Position = position;
@@ -46,6 +46,10 @@ namespace IF.Ray.WinRT.Models
                     {
                         var vertex = Shape.Vertices[face[vi].VertexIndex - 1];
                         var v4 = new Vector4(vertex.X, vertex.Y, vertex.Z, 1.0f);
+
+                        // translate v4 by matrix
+                        v4 += Position;
+
                         sdxVertices[f * FaceVectorCount + vi] = v4;
                     }
 
