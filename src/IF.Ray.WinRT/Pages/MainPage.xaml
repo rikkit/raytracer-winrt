@@ -8,7 +8,8 @@
     mc:Ignorable="d"    
     d:DesignWidth="1366"
     d:DesignHeight="768">
-    <Grid Background="White">
+    <Grid x:Name="PageGrid"
+          Background="White">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="3*"/>
@@ -23,13 +24,13 @@
         <Border Grid.Column="0"
                 Background="{StaticResource AppBarBackgroundThemeBrush}">
             <StackPanel Margin="20">
-                <Slider x:Name="ScaleSlider"
+                <Slider x:Name="ZoomSlider"
                         Header="Scale"
-                        Value="3"
-                        Minimum="0.5"
-                        Maximum="10"
+                        Value="1"
+                        Minimum="0.1"
+                        Maximum="5"
                         Orientation="Horizontal"
-                        ValueChanged="ScaleSlider_OnValueChanged"
+                        ValueChanged="OnZoomSliderChanged"
                         StepFrequency="0.01"/>
                 <Slider x:Name="RotationXSlider"
                         Header="X Rotation"

@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 
@@ -13,24 +14,34 @@ namespace IF.Ray.WinRT.Pages
     {
         public MainPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            SizeChanged += OnPageSizeChanged;
         }
 
-        private void ScaleSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void OnPageSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (D3DUserControl != null && ScaleSlider != null)
-            {
-                var transform = new CompositeTransform();
-                //transform.Rotation = RotateSlider.Value;
-                transform.ScaleX = ScaleSlider.Value;
-                transform.ScaleY = ScaleSlider.Value;
-                D3DUserControl.RenderTransform = transform;
-            }
+            D3DUserControl.Width = PageGrid.ColumnDefinitions[1].ActualWidth;
+            D3DUserControl.Height = PageGrid.ActualHeight;
         }
 
         private void OnRotationSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            if (D3DUserControl == null)
+            {
+                return;
+            }
+
             D3DUserControl.UpdateRotation((float)RotationXSlider.Value, (float)RotationYSlider.Value, (float)RotationZSlider.Value);
+        }
+
+        private void OnZoomSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (D3DUserControl == null)
+            {
+                return;
+            }
+
+            D3DUserControl.UpdateZoom((float) ZoomSlider.Value);
         }
     }
 }

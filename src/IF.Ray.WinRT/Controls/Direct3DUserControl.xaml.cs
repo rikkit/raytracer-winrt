@@ -19,18 +19,6 @@ namespace IF.Ray.WinRT.Controls
         public static readonly DependencyProperty DesignModeD3DRenderingProperty =
             DependencyProperty.Register("DesignModeD3DRendering", typeof(bool), typeof(Direct3DUserControl), new PropertyMetadata(false));
 
-        public void UpdateRotation(float x, float y, float z)
-        {
-            if (_sceneRenderer == null)
-            {
-                return;
-            }
-
-            _sceneRenderer.RotationX = x;
-            _sceneRenderer.RotationY = y;
-            _sceneRenderer.RotationZ = z;
-        }
-
         public bool DesignModeD3DRendering
         {
             get
@@ -94,6 +82,28 @@ namespace IF.Ray.WinRT.Controls
         {
             _target.RenderAll();
             _target.Present();
+        }
+
+        public void UpdateZoom(float value)
+        {
+            if (_sceneRenderer == null)
+            {
+                return;
+            }
+
+            _sceneRenderer.Zoom = value;
+        }
+
+        public void UpdateRotation(float x, float y, float z)
+        {
+            if (_sceneRenderer == null)
+            {
+                return;
+            }
+
+            _sceneRenderer.RotationX = x;
+            _sceneRenderer.RotationY = y;
+            _sceneRenderer.RotationZ = z;
         }
     }
 }

@@ -20,10 +20,20 @@ namespace IF.Ray.WinRT.Renderer
         private Scene _scene;
         private Stopwatch _clock;
         private Matrix _view;
+        private Vector3 _defaultCameraLocation;
 
         public float RotationX { get; set; }
         public float RotationY { get; set; }
         public float RotationZ { get; set; }
+        public float Zoom { get; set; }
+
+        public SceneRenderer()
+        {
+            RotationX = 0;
+            RotationY = 0;
+            RotationZ = 0;
+            Zoom = 1;
+        }
 
         public void Initialise(DeviceManager devices)
         {
@@ -53,8 +63,7 @@ namespace IF.Ray.WinRT.Renderer
                 0);
             _constantBuffer = ToDispose(buffer);
 
-            // set up camera
-            _view = Matrix.LookAtLH(new Vector3(-8, 10, 0), new Vector3(0, 0, 0), Vector3.UnitY);
+            _defaultCameraLocation = new Vector3(0, 6, -10);
 
             _clock = new Stopwatch();
             _clock.Start();
@@ -66,6 +75,9 @@ namespace IF.Ray.WinRT.Renderer
 
             var width = (float) render.RenderTargetSize.Width;
             var height = (float) render.RenderTargetSize.Height;
+
+            // set up camera
+            _view = Matrix.LookAtLH(_defaultCameraLocation * (1/Zoom), new Vector3(0, 0, 0), Vector3.UnitY);
 
             var proj = Matrix.PerspectiveFovLH((float)Math.PI / 4f, width / (float)height, 0.1f, 100f);
             var viewProj = Matrix.Multiply(_view, proj);
