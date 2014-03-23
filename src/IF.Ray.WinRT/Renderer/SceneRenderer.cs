@@ -36,7 +36,7 @@ namespace IF.Ray.WinRT.Renderer
             var shape = shapeFactory.GetShape<Cube>();
             var shape2 = shapeFactory.GetShape<Cube>();
 
-            _scene.AddShape(shape, new Vector4(-5, -5, -5, 1));
+            _scene.AddShape(shape, new Vector4(-10, 0, 10, 1));
             _scene.AddShape(shape2, _scene.Origin);
 
             foreach (var binding in _scene.Bindings)
@@ -54,7 +54,7 @@ namespace IF.Ray.WinRT.Renderer
             _constantBuffer = ToDispose(buffer);
 
             // set up camera
-            _view = Matrix.LookAtLH(new Vector3(-10, 0, -10), new Vector3(0, 0, 0), Vector3.UnitY);
+            _view = Matrix.LookAtLH(new Vector3(-8, 10, 0), new Vector3(0, 0, 0), Vector3.UnitY);
 
             _clock = new Stopwatch();
             _clock.Start();
