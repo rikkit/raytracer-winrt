@@ -15,12 +15,13 @@ namespace IF.Ray.WinRT.Models
 
         public Shape Shape { get; set; }
         public Vector4 Position { get; set; }
-        public VertexBufferBinding Dx3VertexBufferBinding { get; private set; }
+        public Vector4[] BufferVertices { get; set; }
+        public int BufferIndex { get; set; }
         public VertexShader Dx3VertexShader { get; private set; }
         public PixelShader Dx3PixelShader { get; private set; }
         public InputLayout Dx3InputLayout { get; private set; }
 
-        public int VertexBufferCount { get; private set; }
+        public int BufferVertexCount { get; private set; }
 
         public SceneBinding(Shape shape, Vector4 position)
         {
@@ -28,13 +29,13 @@ namespace IF.Ray.WinRT.Models
             Position = position;
         }
 
-        public void InitialiseBuffer(Device1 dx3Device)
+        public void Initialise(Device1 dx3Device)
         {
             // group the mesh-vertices and normals by each face
             var group = Shape.Groups.First(); // TODO factor this out
-            VertexBufferCount = FaceVectorCount*group.Faces.Count;
+            BufferVertexCount = FaceVectorCount*group.Faces.Count;
 
-            var sdxVertices = new Vector4[VertexBufferCount];
+            var sdxVertices = new Vector4[BufferVertexCount];
             for (var f = 0; f < group.Faces.Count; f++)
             {
                 var face = group.Faces[f];
@@ -62,6 +63,10 @@ namespace IF.Ray.WinRT.Models
                     }
                 }
             }
+
+            BufferVertices = sdxVertices;
+
+            // ----------
 
             var path = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
 
@@ -132,8 +137,7 @@ namespace IF.Ray.WinRT.Models
             //                          new Vector4( 1.0f,  1.0f,  1.0f, 1.0f), new Vector4(0.0f, 1.0f, 1.0f, 1.0f),
             //};
 
-            var vertices = Buffer.Create(dx3Device, BindFlags.VertexBuffer, sdxVertices);
-            Dx3VertexBufferBinding = new VertexBufferBinding(vertices, Utilities.SizeOf<Vector4>(), 0);
         }
+
     }
 }

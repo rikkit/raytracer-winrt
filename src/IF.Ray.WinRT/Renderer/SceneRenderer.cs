@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Windows.UI.Xaml.Media.Animation;
 using CommonDX;
@@ -21,6 +22,7 @@ namespace IF.Ray.WinRT.Renderer
         private Stopwatch _clock;
         private Matrix _view;
         private Vector3 _defaultCameraLocation;
+        private VertexBufferBinding _vertexBufferBinding;
 
         public float RotationX { get; set; }
         public float RotationY { get; set; }
@@ -49,10 +51,20 @@ namespace IF.Ray.WinRT.Renderer
             _scene.AddShape(shape, new Vector4(-10, 0, 10, 1));
             _scene.AddShape(shape2, _scene.Origin);
 
+            var list = new List<Vector4[]>();
+            var bufferIndex = 0;
             foreach (var binding in _scene.Bindings)
             {
-                binding.InitialiseBuffer(dx3Device);
+                binding.Initialise(dx3Device);
+                list.Add(binding.BufferVertices);
+
+                binding.BufferIndex = bufferIndex; // store the index of the start of this model's vertices
+                bufferIndex += binding.BufferVertexCount;
             }
+
+            // collapse model's vertices into one buffer
+            var vertices = Buffer.Create(dx3Device, BindFlags.VertexBuffer, list.SelectMany(v => v).ToArray());
+            _vertexBufferBinding = new VertexBufferBinding(vertices, Utilities.SizeOf<Vector4>(), 0);
 
             var buffer = new Buffer(dx3Device,
                 Utilities.SizeOf<Matrix>(),
@@ -80,7 +92,7 @@ namespace IF.Ray.WinRT.Renderer
             _view = Matrix.LookAtLH(_defaultCameraLocation * (1/Zoom), new Vector3(0, 0, 0), Vector3.UnitY);
 
             var proj = Matrix.PerspectiveFovLH((float)Math.PI / 4f, width / (float)height, 0.1f, 100f);
-            var viewProj = Matrix.Multiply(_view, proj);
+            var viewProj = _view * proj;
 
             var rotationMatrix = Matrix.RotationX(RotationX) * Matrix.RotationY(RotationY) * Matrix.RotationZ(RotationZ);
             var worldViewProj = rotationMatrix * viewProj;
@@ -96,13 +108,12 @@ namespace IF.Ray.WinRT.Renderer
 
             // Calculate world view projection
             //var time = (float)(_clock.ElapsedMilliseconds / 1000.0);
-            
+
+            // set up pipeline
+            dx3Context.InputAssembler.SetVertexBuffers(0, _vertexBufferBinding);
 
             foreach (var binding in _scene.Bindings)
             {
-                // set up pipeline
-                dx3Context.InputAssembler.SetVertexBuffers(0, binding.Dx3VertexBufferBinding);
-
                 // vertex shader
                 if (binding.Dx3InputLayout != null)
                 {
@@ -124,7 +135,7 @@ namespace IF.Ray.WinRT.Renderer
                 dx3Context.UpdateSubresource(ref worldViewProj, _constantBuffer, 0);
 
                 // Draw the cube
-                dx3Context.Draw(binding.VertexBufferCount, 0);
+                dx3Context.Draw(binding.BufferVertexCount, binding.BufferIndex);
             }
         }
     }
