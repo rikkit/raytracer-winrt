@@ -1,16 +1,12 @@
-using System.Collections.Generic;
-using System.Linq;
-using Windows.UI.Xaml.Media.Animation;
 using CommonDX;
 using IF.Ray.WinRT.Models;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
-using SharpDX.DXGI;
-using SharpDX.IO;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
 using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace IF.Ray.WinRT.Renderer
@@ -24,9 +20,44 @@ namespace IF.Ray.WinRT.Renderer
         private Vector3 _defaultCameraLocation;
         private VertexBufferBinding _vertexBufferBinding;
 
-        public float RotationX { get; set; }
-        public float RotationY { get; set; }
-        public float RotationZ { get; set; }
+        private Quaternion _oldQ;
+        private float _rotationX;
+        private float _rotXDiff;
+        private float _rotationY;
+        private float _rotYDiff;
+        private float _rotationZ;
+        private float _rotZDiff;
+
+        public float RotationX
+        {
+            get { return _rotationX; }
+            set
+            {
+                _rotXDiff = _rotationX - value;
+                _rotationX = value;
+            }
+        }
+
+        public float RotationY
+        {
+            get { return _rotationY; }
+            set
+            {
+                _rotYDiff = _rotationY - value;
+                _rotationY = value;
+            }
+        }
+
+        public float RotationZ
+        {
+            get { return _rotationZ; }
+            set
+            {
+                _rotZDiff = _rotationZ - value;
+                _rotationZ = value;
+            }
+        }
+
         public float Zoom { get; set; }
 
         public SceneRenderer()
@@ -35,6 +66,7 @@ namespace IF.Ray.WinRT.Renderer
             RotationY = 0;
             RotationZ = 0;
             Zoom = 1;
+            _oldQ = Quaternion.Identity;
         }
 
         public void Initialise(DeviceManager devices)
@@ -90,11 +122,25 @@ namespace IF.Ray.WinRT.Renderer
 
             // set up camera
             _view = Matrix.LookAtLH(_defaultCameraLocation * (1/Zoom), new Vector3(0, 0, 0), Vector3.UnitY);
+            
+            // get new *relative* world q
+            var worldQ = Quaternion.RotationYawPitchRoll(_rotYDiff, _rotXDiff, _rotZDiff);
 
+            // reset relative values
+            _rotXDiff = 0;
+            _rotYDiff = 0;
+            _rotZDiff = 0;
+
+            // transform world q into local rotation q
+            var rotateQ = _oldQ * Quaternion.Invert(_oldQ) * worldQ * _oldQ;
+            _oldQ = rotateQ;
+
+            // get the matrix
+            var rotationMatrix = Matrix.RotationQuaternion(rotateQ);
             var proj = Matrix.PerspectiveFovLH((float)Math.PI / 4f, width / (float)height, 0.1f, 100f);
             var viewProj = _view * proj;
 
-            var rotationMatrix = Matrix.RotationX(RotationX) * Matrix.RotationY(RotationY) * Matrix.RotationZ(RotationZ);
+            // project!
             var worldViewProj = rotationMatrix * viewProj;
             worldViewProj.Transpose();
 
@@ -137,6 +183,14 @@ namespace IF.Ray.WinRT.Renderer
                 // Draw the cube
                 dx3Context.Draw(binding.BufferVertexCount, binding.BufferIndex);
             }
+        }
+    }
+
+    public static class RenderEx
+    {
+        public static Vector3 AsVector3(this Vector4 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
         }
     }
 }
