@@ -22,6 +22,9 @@ namespace IF.Ray.WinRT.Renderer
 
         private WriteableBitmap _lastRender;
         private float _zoom;
+        private float _lastRotX;
+        private float _lastRotY;
+        private float _lastRotZ;
 
         public float RotationX
         {
@@ -101,9 +104,18 @@ namespace IF.Ray.WinRT.Renderer
             // update zoom
             _scene.Camera.Scale = Zoom;
 
+            // get relative rotation amount
+            var rotXDiff = _rotationX - _lastRotX;
+            var rotYDiff = _rotationY - _lastRotY;
+            var rotZDiff = _rotationZ - _lastRotZ;
+            _lastRotX = _rotationX;
+            _lastRotY = _rotationY;
+            _lastRotZ = _rotationZ;
+
             // rotation
             // get new *relative* world q
-            var worldQ = Quaternion.RotationYawPitchRoll(RotationX, RotationY, RotationZ);
+            var worldQ = Quaternion.RotationYawPitchRoll(rotXDiff, rotYDiff, rotZDiff);
+
 
             // transform world q into local rotation q
             var rotateQ = _oldQ*Quaternion.Invert(_oldQ)*worldQ*_oldQ;
