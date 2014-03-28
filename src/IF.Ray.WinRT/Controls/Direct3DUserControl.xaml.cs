@@ -1,87 +1,47 @@
-﻿// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
-
-using System;
-using Windows.Graphics.Display;
+﻿using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using CommonDX;
-using IF.Ray.WinRT.Common;
 using IF.Ray.WinRT.Renderer;
 
 namespace IF.Ray.WinRT.Controls
 {
-    public sealed partial class Direct3DUserControl : SwapChainPanel
+    public sealed partial class Direct3DUserControl : UserControl
     {
-        DeviceManager _deviceManager;
-        SwapChainPanelTarget _target;
         SceneRenderer _sceneRenderer;
-
-        public static readonly DependencyProperty DesignModeD3DRenderingProperty =
-            DependencyProperty.Register("DesignModeD3DRendering", typeof(bool), typeof(Direct3DUserControl), new PropertyMetadata(false));
-
-        public bool DesignModeD3DRendering
-        {
-            get
-            {
-                return (bool)GetValue(DesignModeD3DRenderingProperty);
-            }
-            set
-            {
-                SetValue(DesignModeD3DRenderingProperty, value);
-            }
-        }
+        
+        public bool CanRender { get; set; }
 
         public Direct3DUserControl()
         {
             this.InitializeComponent();
-            // Do D3D initialization when element is loaded, because DesignModeD3DRendering is yet not set in ctor
-            this.Loaded += Direct3DUserControl_Loaded;            
+
+            _sceneRenderer = new SceneRenderer();
+            this.Loaded += OnLoaded;
         }
 
-        void Direct3DUserControl_Loaded(object sender, RoutedEventArgs e)
+        private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            // Do not initialize D3D in design mode as default, since it may cause designer crashes
-            if (Windows.ApplicationModel.DesignMode.DesignModeEnabled && !DesignModeD3DRendering)
-                return;
-
-            // Safely dispose any previous instance
-            // Creates a new DeviceManager (Direct3D, Direct2D, DirectWrite, WIC)
-            _deviceManager = new DeviceManager();            
-
-            // Use current control as the rendering _target (Initialize SwapChain, RenderTargetView, DepthStencilView, BitmapTarget)
-            _target = new SwapChainPanelTarget(this);
-
-            // Add Initializer to device manager
-            _deviceManager.OnInitialize += _target.Initialize;
-
-            // scene renderer
-            _sceneRenderer = new SceneRenderer();
-            _deviceManager.OnInitialize += _sceneRenderer.Initialise;
-            _target.OnRender += _sceneRenderer.Render;
-
-            // Initialize the device manager and all registered _deviceManager.OnInitialize             
-            try
+            if (DesignMode.DesignModeEnabled)
             {
-                _deviceManager.Initialize(DisplayInformation.GetForCurrentView().LogicalDpi);
-                DisplayInformation.GetForCurrentView().DpiChanged += DisplayInformation_LogicalDpiChanged;
-            } catch (Exception ex) {
-                //DisplayInformation.GetForCurrentView() will throw exception in designer
-                _deviceManager.Initialize(96.0f);
+                return;
             }
 
-            // Setup rendering callback
-            CompositionTargetEx.Rendering += CompositionTarget_Rendering;
+            await Task.Run(async () => await _sceneRenderer.InitialiseSceneAsync());
+            CanRender = true;
         }
 
-        void DisplayInformation_LogicalDpiChanged(DisplayInformation displayInformation, object sender)
+        public async Task RenderAsync()
         {
-            _deviceManager.Dpi = displayInformation.LogicalDpi;
-        }
-
-        void CompositionTarget_Rendering(object sender, object e)
-        {
-            _target.RenderAll();
-            _target.Present();
+            CanRender = false;
+            var width = (int)this.Width;
+            var height = (int)this.Height;
+            var image = await _sceneRenderer.RenderAsync(width, height);
+            
+            RaytracedImage.Source = null;
+            RaytracedImage.Source = image;
+            
+            CanRender = true;
         }
 
         public void UpdateZoom(float value)

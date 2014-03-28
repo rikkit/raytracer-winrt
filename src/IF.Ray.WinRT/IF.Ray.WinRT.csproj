@@ -42,15 +42,6 @@
     <Reference Include="SharpDX">
       <HintPath>..\..\lib\SharpDX\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct2D1">
-      <HintPath>..\..\lib\SharpDX\SharpDX.Direct2D1.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D11">
-      <HintPath>..\..\lib\SharpDX\SharpDX.Direct3D11.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DXGI">
-      <HintPath>..\..\lib\SharpDX\SharpDX.DXGI.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\BindableBase.cs" />
@@ -62,7 +53,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Common\CompositionTargetEx.cs" />
-    <Compile Include="Renderer\CubeRenderer.cs" />
+    <Compile Include="Models\Camera.cs" />
     <Compile Include="Controls\Direct3DUserControl.xaml.cs">
       <DependentUpon>Direct3DUserControl.xaml</DependentUpon>
     </Compile>
@@ -71,12 +62,13 @@
     </Compile>
     <Compile Include="Models\Scene.cs" />
     <Compile Include="Models\SceneBinding.cs" />
-    <Compile Include="Models\Shape.cs" />
+    <Compile Include="Models\Mesh.cs" />
     <Compile Include="Models\ShapeFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Renderer\IRenderer.cs" />
+    <Compile Include="Renderer\IAsyncRenderer.cs" />
+    <Compile Include="Renderer\PixelStream.cs" />
+    <Compile Include="Renderer\RenderEx.cs" />
     <Compile Include="Renderer\SceneRenderer.cs" />
-    <Compile Include="Renderer\ShapeRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -136,17 +128,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\lib\CommonDX\CommonDX.csproj">
-      <Project>{45cd76a3-e21e-47a3-8bfd-9a1241aadb9d}</Project>
-      <Name>CommonDX</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\lib\inflatable-toolkit\src\IF.Common.Metro\IF.Common.Metro.csproj">
       <Project>{948802f9-6d48-489c-8500-f6d2c84411bd}</Project>
       <Name>IF.Common.Metro</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\lib\ObjLoader\source\CjClutter.ObjLoader.WinRT\CjClutter.ObjLoader.WinRT.csproj">
-      <Project>{c05d08d4-a3bf-4952-844f-952632b4d5ff}</Project>
-      <Name>CjClutter.ObjLoader.WinRT</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">

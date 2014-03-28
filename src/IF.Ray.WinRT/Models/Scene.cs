@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using SharpDX;
 
 namespace IF.Ray.WinRT.Models
@@ -21,16 +22,18 @@ namespace IF.Ray.WinRT.Models
         }
 
         public Vector4 Origin { get; private set; }
-
-        public Scene()
+        public Camera Camera { get; set; }
+        
+        public Scene(Camera camera)
         {
             Origin = new Vector4(0, 0, 0, 0);
             _shapes = new List<SceneBinding>();
+            Camera = camera;
         }
 
-        public void AddShape(Shape shape, Vector4 position)
+        public void AddShape(Mesh mesh, Vector4 position)
         {
-            var binding = new SceneBinding(shape, position);
+            var binding = new SceneBinding(mesh, position);
             _shapes.Add(binding);
         }
     }

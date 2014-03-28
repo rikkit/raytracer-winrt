@@ -1,40 +1,35 @@
-using CommonDX;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using IF.Ray.WinRT.Models;
 using SharpDX;
-using SharpDX.Direct3D;
-using SharpDX.Direct3D11;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Buffer = SharpDX.Direct3D11.Buffer;
+using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace IF.Ray.WinRT.Renderer
 {
-    public class SceneRenderer : Component, IRenderer
+    public class SceneRenderer : IAsyncRenderer
     {
-        private Buffer _constantBuffer;
         private Scene _scene;
-        private Stopwatch _clock;
-        private Matrix _view;
-        private Vector3 _defaultCameraLocation;
-        private VertexBufferBinding _vertexBufferBinding;
 
         private Quaternion _oldQ;
         private float _rotationX;
-        private float _rotXDiff;
         private float _rotationY;
-        private float _rotYDiff;
         private float _rotationZ;
-        private float _rotZDiff;
+
+        private bool _parametersChanged;
+
+        private WriteableBitmap _lastRender;
+        private float _zoom;
 
         public float RotationX
         {
             get { return _rotationX; }
             set
             {
-                _rotXDiff = _rotationX - value;
                 _rotationX = value;
+                _parametersChanged = true;
             }
         }
 
@@ -43,8 +38,8 @@ namespace IF.Ray.WinRT.Renderer
             get { return _rotationY; }
             set
             {
-                _rotYDiff = _rotationY - value;
                 _rotationY = value;
+                _parametersChanged = true;
             }
         }
 
@@ -53,12 +48,22 @@ namespace IF.Ray.WinRT.Renderer
             get { return _rotationZ; }
             set
             {
-                _rotZDiff = _rotationZ - value;
                 _rotationZ = value;
+                _parametersChanged = true;
             }
         }
 
-        public float Zoom { get; set; }
+        public float Zoom
+        {
+            get { return _zoom; }
+            set
+            {
+                _zoom = value;
+                _parametersChanged = true;
+            }
+        }
+
+        public bool Initialised { get; set; }
 
         public SceneRenderer()
         {
@@ -69,128 +74,112 @@ namespace IF.Ray.WinRT.Renderer
             _oldQ = Quaternion.Identity;
         }
 
-        public void Initialise(DeviceManager devices)
+        public async Task InitialiseSceneAsync()
         {
-            RemoveAndDispose(ref _constantBuffer);
+            var camera = new Camera(new Vector3(0, 6, -10), new Vector3(0, -6, 10));
 
-            var dx3Device = devices.DeviceDirect3D;
-
-            _scene = new Scene();
+            _scene = new Scene(camera);
             var shapeFactory = new ShapeFactory();
-            var shape = shapeFactory.GetShape<Cube>();
-            var shape2 = shapeFactory.GetShape<Cube>();
+            var square = await shapeFactory.GetShape<Cube>();
+            //var cylinder = await shapeFactory.GetShape<Cylinder>();
 
-            _scene.AddShape(shape, new Vector4(-10, 0, 10, 1));
-            _scene.AddShape(shape2, _scene.Origin);
+            _scene.AddShape(square, new Vector4(0, 0, 0, 1));
+            //_scene.AddShape(cylinder, new Vector4(-10, 0, 0, 1));
 
-            var list = new List<Vector4[]>();
-            var bufferIndex = 0;
-            foreach (var binding in _scene.Bindings)
-            {
-                binding.Initialise(dx3Device);
-                list.Add(binding.BufferVertices);
-
-                binding.BufferIndex = bufferIndex; // store the index of the start of this model's vertices
-                bufferIndex += binding.BufferVertexCount;
-            }
-
-            // collapse model's vertices into one buffer
-            var vertices = Buffer.Create(dx3Device, BindFlags.VertexBuffer, list.SelectMany(v => v).ToArray());
-            _vertexBufferBinding = new VertexBufferBinding(vertices, Utilities.SizeOf<Vector4>(), 0);
-
-            var buffer = new Buffer(dx3Device,
-                Utilities.SizeOf<Matrix>(),
-                ResourceUsage.Default,
-                BindFlags.ConstantBuffer,
-                CpuAccessFlags.None,
-                ResourceOptionFlags.None,
-                0);
-            _constantBuffer = ToDispose(buffer);
-
-            _defaultCameraLocation = new Vector3(0, 6, -10);
-
-            _clock = new Stopwatch();
-            _clock.Start();
+            Initialised = true;
         }
 
-        public void Render(TargetBase render)
+        public async Task<WriteableBitmap> RenderAsync(int width, int height)
         {
-            var dx3Context = render.DeviceManager.ContextDirect3D;
+            // if no values have changed then don't bother with rendering
+            if (!Initialised || !_parametersChanged)
+            {
+                return _lastRender;
+            }
+            _parametersChanged = false;
 
-            var width = (float) render.RenderTargetSize.Width;
-            var height = (float) render.RenderTargetSize.Height;
+            // update zoom
+            _scene.Camera.Scale = Zoom;
 
-            // set up camera
-            _view = Matrix.LookAtLH(_defaultCameraLocation * (1/Zoom), new Vector3(0, 0, 0), Vector3.UnitY);
-            
+            // rotation
             // get new *relative* world q
-            var worldQ = Quaternion.RotationYawPitchRoll(_rotYDiff, _rotXDiff, _rotZDiff);
-
-            // reset relative values
-            _rotXDiff = 0;
-            _rotYDiff = 0;
-            _rotZDiff = 0;
+            var worldQ = Quaternion.RotationYawPitchRoll(RotationX, RotationY, RotationZ);
 
             // transform world q into local rotation q
-            var rotateQ = _oldQ * Quaternion.Invert(_oldQ) * worldQ * _oldQ;
+            var rotateQ = _oldQ*Quaternion.Invert(_oldQ)*worldQ*_oldQ;
             _oldQ = rotateQ;
 
-            // get the matrix
+            // get the world projection matrix
             var rotationMatrix = Matrix.RotationQuaternion(rotateQ);
-            var proj = Matrix.PerspectiveFovLH((float)Math.PI / 4f, width / (float)height, 0.1f, 100f);
-            var viewProj = _view * proj;
+            var proj = Matrix.PerspectiveFovLH((float) Math.PI/4f, width/(float) height, 0.1f, 100f);
+            var worldViewProj = rotationMatrix*_scene.Camera.Matrix*proj;
 
-            // project!
-            var worldViewProj = rotationMatrix * viewProj;
             worldViewProj.Transpose();
 
-            // Set targets (This is mandatory in the loop)
-            dx3Context.OutputMerger.SetTargets(render.DepthStencilView, render.RenderTargetView);
+            var wb = new WriteableBitmap(width, height);
+            var stream = wb.PixelBuffer.AsStream();
+            if (stream.CanWrite)
+            {
+                stream.Position = 0;
 
-            // Clear the views
-            dx3Context.ClearDepthStencilView(render.DepthStencilView, DepthStencilClearFlags.Depth, 1f, 0);
+                for (var y = 0; y < height; y++)
+                {
+                    for (var x = 0; x < width; x++)
+                    {
+                        var color = TraceRay(worldViewProj, x, y, width, height);
+                        stream.WriteByte(color.B);
+                        stream.WriteByte(color.G);
+                        stream.WriteByte(color.R);
+                        stream.WriteByte(color.A);
+                    }
+                }
+
+                stream.Flush();
+
+                _lastRender = wb;
+            }
             
-            dx3Context.ClearRenderTargetView(render.RenderTargetView, Color.Transparent);
+            return _lastRender;
+        }
 
-            // Calculate world view projection
-            //var time = (float)(_clock.ElapsedMilliseconds / 1000.0);
+        private Color TraceRay(Matrix proj, int x, int y, int width, int height)
+        {
+            // get camera plane; plane that intersects camera location z-axis
+            var cameraPlane = new Plane(_scene.Camera.Position, _scene.Camera.Direction);
+            const float pixelSize = 0.1f;
+            var u = x - (width * 0.5);
+            var v = y - (height * 0.5);
 
-            // set up pipeline
-            dx3Context.InputAssembler.SetVertexBuffers(0, _vertexBufferBinding);
+            //TODO this isn't right
+            var uvPixel = new Vector3(
+                _scene.Camera.Position.X + (float)u * pixelSize,
+                _scene.Camera.Position.Y + (float)v * pixelSize,
+                _scene.Camera.Position.Z);
+
+            // get the direction of the ray; get normal then scale by projection
+            var rayV = _scene.Camera.Target - uvPixel;
+
+            // compute primary ray direction
+            var w = new SharpDX.Ray(uvPixel, rayV);
 
             foreach (var binding in _scene.Bindings)
             {
-                // vertex shader
-                if (binding.Dx3InputLayout != null)
+                foreach (var triangle in binding.Mesh.Triangles)
                 {
-                    dx3Context.InputAssembler.InputLayout = binding.Dx3InputLayout;
-                }
-                if (binding.Dx3VertexShader != null)
-                {
-                    dx3Context.VertexShader.Set(binding.Dx3VertexShader);
-                }
-                if (binding.Dx3PixelShader != null)
-                {
-                    dx3Context.PixelShader.Set(binding.Dx3PixelShader);
-                }
+                    // translate to world coordinates
+                    var wv = triangle.ToWorldCoordinates(binding.Position.AsVector3());
+                    var fvs = wv.Select(v3 => Vector3.Transform(v3, proj).AsVector3()).ToArray();
+                    
+                    var intersects = w.Intersects(ref fvs[0], ref fvs[1], ref fvs[2]);
 
-                dx3Context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-                dx3Context.VertexShader.SetConstantBuffer(0, _constantBuffer);
-
-                // Update Constant Buffer
-                dx3Context.UpdateSubresource(ref worldViewProj, _constantBuffer, 0);
-
-                // Draw the cube
-                dx3Context.Draw(binding.BufferVertexCount, binding.BufferIndex);
+                    if (intersects)
+                    {
+                        return Color.DarkGray;
+                    }
+                }
             }
-        }
-    }
 
-    public static class RenderEx
-    {
-        public static Vector3 AsVector3(this Vector4 v)
-        {
-            return new Vector3(v.X, v.Y, v.Z);
+            return Color.White;
         }
     }
 }
