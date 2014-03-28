@@ -173,16 +173,13 @@ namespace IF.Ray.WinRT.Renderer
 
             // compute primary ray direction
             var w = new SharpDX.Ray(uvPixel, rayV);
-
+            
             foreach (var binding in _scene.Bindings)
             {
                 foreach (var triangle in binding.Mesh.Triangles)
                 {
-                    // translate to world coordinates
-                    var wv = triangle.ToWorldCoordinates(binding.Position.AsVector3());
-                    var fvs = wv.Select(v3 => Vector3.Transform(v3, proj).AsVector3()).ToArray();
-                    
-                    var intersects = w.Intersects(ref fvs[0], ref fvs[1], ref fvs[2]);
+                    Vector3 intersect;
+                    var intersects = triangle.TranslateTo(binding.Position).Intersects(w, out intersect);
 
                     if (intersects)
                     {
