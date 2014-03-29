@@ -6,8 +6,8 @@ namespace IF.Ray.WinRT.Models
     {
         public const int FaceVectorCount = 6;
         public Mesh Mesh { get; set; }
-        public Vector4 Position { get; set; }
-        public SceneBinding(Mesh mesh, Vector4 position)
+        public Vector3 Position { get; set; }
+        public SceneBinding(Mesh mesh, Vector3 position)
         {
             Mesh = mesh;
             Position = position;

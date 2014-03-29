@@ -86,8 +86,10 @@ namespace IF.Ray.WinRT.Renderer
             var square = await shapeFactory.GetShape<Cube>();
             var cylinder = await shapeFactory.GetShape<Cylinder>();
 
-            _scene.AddShape(square, new Vector4(0, 0, 0, 1));
-            _scene.AddShape(cylinder, new Vector4(-10, 0, 0, 1));
+            _scene.Bindings.Add(new SceneBinding(square, new Vector3(0, 0, 0)));
+            _scene.Bindings.Add(new SceneBinding(cylinder, new Vector3(-10, 0, 0)));
+
+            _scene.Lights.Add(new Light(new Vector3(0, 10, -5), 1));
 
             Initialised = true;
         }
@@ -170,21 +172,21 @@ namespace IF.Ray.WinRT.Renderer
                 _scene.Camera.Position.Z);
 
             // get the direction of the ray
-            var rayV = _scene.Camera.Target - uvPixel;
+            var rayDir = _scene.Camera.Target - uvPixel;
 
             // get the actual ray
-            var w = new SharpDX.Ray(uvPixel, rayV);
+            var ray = new SharpDX.Ray(uvPixel, rayDir);
             
             foreach (var binding in _scene.Bindings)
             {
                 foreach (var triangle in binding.Mesh.Triangles)
                 {
-                    Vector3 intersect;
-                    var intersects = triangle.TranslateTo(binding.Position).Transform(proj).Intersects(w, out intersect);
+                    Vector3 intersection;
+                    var intersects = triangle.TranslateTo(binding.Position).Transform(proj).Intersects(ray, out intersection);
 
                     if (intersects)
                     {
-                        return Color.DarkGray;
+                        return triangle.Colorise(_scene.Lights, ray, intersection);
                     }
                 }
             }

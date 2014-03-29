@@ -20,7 +20,7 @@ namespace IF.Ray.WinRT.Models
 
     public class Triangle
     {
-        private Vector4 _translation;
+        private Vector3 _translation;
         private Matrix _transformation;
         private readonly Vector3[] _vertices;
 
@@ -53,7 +53,7 @@ namespace IF.Ray.WinRT.Models
             return Vertices.Select((v, i) => v + position[i]).ToArray();
         }
 
-        public Triangle TranslateTo(Vector4 position)
+        public Triangle TranslateTo(Vector3 position)
         {
             if (position != _translation)
             {
@@ -80,7 +80,6 @@ namespace IF.Ray.WinRT.Models
 
         public Triangle Transform(Matrix m)
         {
-
             if (!_transformation.Equals(m))
             {
                 var transformed = Transformed.Select(t => Vector3.TransformCoordinate(t, m));
@@ -90,6 +89,37 @@ namespace IF.Ray.WinRT.Models
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// Get the colour at this point on this triangle
+        /// </summary>
+        /// <param name="scene">The scene this triangle is part of, for the lights</param>
+        /// <param name="ray">The source ray</param>
+        /// <param name="point">The point on the triangle</param>
+        /// <returns>Colour at the point</returns>
+        public Color Colorise(IEnumerable<Light> lights, SharpDX.Ray ray, Vector3 point)
+        {
+            var colour = new Color();
+
+            foreach (var light in lights)
+            {
+                // get the vector between the light and the point
+                var lightv = Vector3.Normalize(point - light.Position);
+                var camerav = Vector3.Normalize(ray.Direction);
+
+                // get the angle between the lightray and the cameraray
+                var cosAngle = Vector3.Dot(lightv, camerav);
+
+                // get the texture colour
+                var triangleColour = Color.Blue;
+
+                var scaledColour = triangleColour*cosAngle;
+
+                colour += scaledColour;
+            }
+
+            return colour;
         }
     }
 }

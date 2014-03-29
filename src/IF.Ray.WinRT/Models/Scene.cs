@@ -7,11 +7,9 @@ namespace IF.Ray.WinRT.Models
     public class Scene
     {
         private readonly IList<SceneBinding> _shapes;
+        private readonly IList<Light> _lights;
 
-        /// <summary>
-        /// TODO Get a better name for this
-        /// </summary>
-        public IEnumerable<SceneBinding> Bindings
+        public IList<SceneBinding> Bindings
         {
             get { return _shapes; }
         }
@@ -23,18 +21,34 @@ namespace IF.Ray.WinRT.Models
 
         public Vector4 Origin { get; private set; }
         public Camera Camera { get; set; }
-        
+
+        public IList<Light> Lights
+        {
+            get { return _lights; }
+        }
+
         public Scene(Camera camera)
         {
             Origin = new Vector4(0, 0, 0, 0);
             _shapes = new List<SceneBinding>();
+            _lights = new List<Light>();
             Camera = camera;
         }
+    }
 
-        public void AddShape(Mesh mesh, Vector4 position)
+    public class Light
+    {
+        public Vector3 Position { get; set; }
+
+        /// <summary>
+        /// Value between 0 and 1
+        /// </summary>
+        public float Intensity { get; set; }
+
+        public Light(Vector3 position, float intensity)
         {
-            var binding = new SceneBinding(mesh, position);
-            _shapes.Add(binding);
+            Position = position;
+            Intensity = intensity;
         }
     }
 }
