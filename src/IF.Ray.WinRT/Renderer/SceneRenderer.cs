@@ -123,9 +123,10 @@ namespace IF.Ray.WinRT.Renderer
 
             // get the world projection matrix
             var rotationMatrix = Matrix.RotationQuaternion(rotateQ);
+
+            // TODO scaling with Zoom
             var worldViewProj = rotationMatrix;
 
-            worldViewProj.ScaleVector = new Vector3(Zoom);
             worldViewProj.Transpose();
 
             foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
