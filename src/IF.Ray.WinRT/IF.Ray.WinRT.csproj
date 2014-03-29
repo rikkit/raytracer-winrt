@@ -39,6 +39,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ninject.Common">
+      <HintPath>..\..\packages\Portable.Ninject.3.2\lib\netcore45\Ninject.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.Platform">
+      <HintPath>..\..\packages\Portable.Ninject.3.2\lib\netcore45\Ninject.Platform.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX">
       <HintPath>..\..\lib\SharpDX\SharpDX.dll</HintPath>
     </Reference>
@@ -53,10 +59,10 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Common\CompositionTargetEx.cs" />
+    <Compile Include="Injection\Modules.cs" />
     <Compile Include="Models\Camera.cs" />
-    <Compile Include="Controls\Direct3DUserControl.xaml.cs">
-      <DependentUpon>Direct3DUserControl.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Models\Light.cs" />
+    <Compile Include="Pages\PageBase.cs" />
     <Compile Include="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -69,6 +75,8 @@
     <Compile Include="Renderer\PixelStream.cs" />
     <Compile Include="Renderer\RenderEx.cs" />
     <Compile Include="Renderer\SceneRenderer.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -94,6 +102,7 @@
     <Content Include="MiniCube_VS.fxo">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Images\Logo.png">
@@ -117,10 +126,6 @@
     <Page Include="Common\StandardStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\Direct3DUserControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\MainPage.xaml">
       <SubType>Designer</SubType>

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using IF.Ray.WinRT.Injection;
+using IF.Ray.WinRT.Pages;
+using Ninject;
+using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-
-// The Blank Application template is documented at http://go.microsoft.com/fwlink/?LinkId=234227
-using IF.Ray.WinRT.Pages;
 
 namespace IF.Ray.WinRT
 {
@@ -14,6 +14,11 @@ namespace IF.Ray.WinRT
     /// </summary>
     sealed partial class App : Application
     {
+        /// <summary>
+        /// Loaded in SplashPage
+        /// </summary>
+        public static IKernel Kernel { get; internal set; }
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -57,6 +62,12 @@ namespace IF.Ray.WinRT
 
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
+
+
+                var kernel = new StandardKernel();
+                kernel.Load(new AppModule(Window.Current.Dispatcher));
+
+                App.Kernel = kernel;
             }
 
             if (rootFrame.Content == null)

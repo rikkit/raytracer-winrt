@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using IF.Common.Metro.Progress;
 using IF.Ray.WinRT.Models;
 using SharpDX;
 using System;
@@ -18,8 +20,6 @@ namespace IF.Ray.WinRT.Renderer
         private float _rotationY;
         private float _rotationZ;
 
-        private bool _parametersChanged;
-
         private WriteableBitmap _lastRender;
         private float _zoom;
         private float _lastRotX;
@@ -32,7 +32,6 @@ namespace IF.Ray.WinRT.Renderer
             set
             {
                 _rotationX = value;
-                _parametersChanged = true;
             }
         }
 
@@ -42,7 +41,6 @@ namespace IF.Ray.WinRT.Renderer
             set
             {
                 _rotationY = value;
-                _parametersChanged = true;
             }
         }
 
@@ -52,7 +50,6 @@ namespace IF.Ray.WinRT.Renderer
             set
             {
                 _rotationZ = value;
-                _parametersChanged = true;
             }
         }
 
@@ -62,7 +59,6 @@ namespace IF.Ray.WinRT.Renderer
             set
             {
                 _zoom = value;
-                _parametersChanged = true;
             }
         }
 
@@ -84,25 +80,31 @@ namespace IF.Ray.WinRT.Renderer
             _scene = new Scene(camera);
             var shapeFactory = new ShapeFactory();
             var square = await shapeFactory.GetShape<Cube>();
-            var cylinder = await shapeFactory.GetShape<Cylinder>();
+            var cylinder = await shapeFactory.GetShape<Cube>();
 
-            _scene.Bindings.Add(new SceneBinding(square, new Vector3(0, 0, 0)));
             _scene.Bindings.Add(new SceneBinding(cylinder, new Vector3(-10, 0, 0)));
+            _scene.Bindings.Add(new SceneBinding(square, new Vector3(0, 0, 0)));
 
-            _scene.Lights.Add(new Light(new Vector3(0, 10, -5), 1));
+            _scene.Lights.Add(new Light(new Vector3(0, 50, -5), Color.White, 1));
 
             Initialised = true;
         }
 
-        public async Task<WriteableBitmap> RenderAsync(int width, int height)
+        public async Task<WriteableBitmap> RenderAsync(int width, int height, ProgressToken token)
         {
-            // if no values have changed then don't bother with rendering
-            if (!Initialised || !_parametersChanged)
-            {
-                return _lastRender;
-            }
-            _parametersChanged = false;
-            
+            var wb = new WriteableBitmap(width, height);
+            var stream = wb.PixelBuffer.AsStream();
+
+            await Task.Run(() => Render(stream, width, height, token));
+
+            token.Value = 100;
+
+            _lastRender = wb;
+            return _lastRender;
+        }
+
+        private void Render(Stream stream, int width, int height, ProgressToken token)
+        {
             // get relative rotation amount
             var rotXDiff = _rotationX - _lastRotX;
             var rotYDiff = _rotationY - _lastRotY;
@@ -114,7 +116,7 @@ namespace IF.Ray.WinRT.Renderer
             // rotation
             // get new *relative* world q
             var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff, rotXDiff, rotZDiff);
-            
+
             // transform world q into local rotation q
             var rotateQ = _oldQ*Quaternion.Invert(_oldQ)*worldQ*_oldQ;
             _oldQ = rotateQ;
@@ -131,12 +133,15 @@ namespace IF.Ray.WinRT.Renderer
                 triangle.Reset();
             }
 
-            var wb = new WriteableBitmap(width, height);
-            var stream = wb.PixelBuffer.AsStream();
             if (stream.CanWrite)
             {
                 stream.Position = 0;
 
+                // generate checkpoints
+                var tenPercent = (width*height)/10;
+                var list = Enumerable.Range(1, 9).Select(i => i*tenPercent).ToList();
+
+                int p = 0;
                 for (var y = 0; y < height; y++)
                 {
                     for (var x = 0; x < width; x++)
@@ -146,15 +151,16 @@ namespace IF.Ray.WinRT.Renderer
                         stream.WriteByte(color.G);
                         stream.WriteByte(color.R);
                         stream.WriteByte(color.A);
+
+                        if (list.Contains(++p))
+                        {
+                            token.Value += 10;
+                        }
                     }
                 }
 
                 stream.Flush();
-
-                _lastRender = wb;
             }
-            
-            return _lastRender;
         }
 
         private Color TraceRay(Matrix proj, int x, int y, int width, int height)
@@ -179,6 +185,8 @@ namespace IF.Ray.WinRT.Renderer
             
             foreach (var binding in _scene.Bindings)
             {
+                var intersecting = new List<ZBufferItem>();
+
                 foreach (var triangle in binding.Mesh.Triangles)
                 {
                     Vector3 intersection;
@@ -186,12 +194,36 @@ namespace IF.Ray.WinRT.Renderer
 
                     if (intersects)
                     {
-                        return triangle.Colorise(_scene.Lights, ray, intersection);
+                        intersecting.Add(new ZBufferItem(triangle, intersection));
                     }
+                }
+
+                if (intersecting.Any())
+                {
+                    var closest = intersecting.OrderBy(i => i.Distance(ray)).First();
+
+                    return closest.Triangle.Colorise(_scene.Lights, ray, closest.Intersection);
                 }
             }
 
             return Color.White;
+        }
+    }
+
+    public class ZBufferItem
+    {
+        public Triangle Triangle { get; set; }
+        public Vector3 Intersection { get; set; }
+
+        public ZBufferItem(Triangle t, Vector3 i)
+        {
+            Triangle = t;
+            Intersection = i;
+        }
+
+        public float Distance(SharpDX.Ray ray)
+        {
+            return Vector3.Distance(ray.Position, Intersection);
         }
     }
 }
