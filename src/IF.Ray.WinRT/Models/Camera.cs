@@ -13,18 +13,7 @@ namespace IF.Ray.WinRT.Models
         }
 
         public float Scale { get; set; }
-
-        /// <summary>
-        /// Get a matrix projection representing this camera
-        /// </summary>
-        public Matrix Matrix
-        {
-            get
-            {
-                return Matrix.LookAtLH(Position * Scale, Target, Vector3.UnitY);
-            }
-        }
-
+        
         public Camera(Vector3 position, Vector3 target)
         {
             Position = position;

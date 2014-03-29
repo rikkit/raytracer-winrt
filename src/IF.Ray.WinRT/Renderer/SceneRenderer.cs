@@ -100,10 +100,7 @@ namespace IF.Ray.WinRT.Renderer
                 return _lastRender;
             }
             _parametersChanged = false;
-
-            // update zoom
-            _scene.Camera.Scale = 1/ Zoom;
-
+            
             // get relative rotation amount
             var rotXDiff = _rotationX - _lastRotX;
             var rotYDiff = _rotationY - _lastRotY;
@@ -124,6 +121,7 @@ namespace IF.Ray.WinRT.Renderer
             var rotationMatrix = Matrix.RotationQuaternion(rotateQ);
             var worldViewProj = rotationMatrix;
 
+            worldViewProj.ScaleVector = new Vector3(Zoom);
             worldViewProj.Transpose();
 
             foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
