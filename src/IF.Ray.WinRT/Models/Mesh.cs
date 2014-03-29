@@ -20,8 +20,6 @@ namespace IF.Ray.WinRT.Models
 
     public class Triangle
     {
-        private Vector3 _translation;
-        private Matrix _transformation;
         private readonly Vector3[] _vertices;
 
         public Vector3[] Vertices {
@@ -39,7 +37,7 @@ namespace IF.Ray.WinRT.Models
 
         public void Reset()
         {
-            Transformed = _vertices;
+            Transformed = _vertices.Select(v => new Vector3(v.X, v.Y, v.Z)).ToArray();
             Plane = new Plane(_vertices[0], _vertices[1], _vertices[2]);
         }
 
@@ -55,12 +53,7 @@ namespace IF.Ray.WinRT.Models
 
         public Triangle TranslateTo(Vector3 position)
         {
-            if (position != _translation)
-            {
-                Transformed = Vertices.Select(v => new Vector3(v.X + position.X, v.Y + position.Y, v.Z + position.Z)).ToArray();
-                _translation = position;
-            }
-
+            Transformed = Vertices.Select(v => new Vector3(v.X + position.X, v.Y + position.Y, v.Z + position.Z)).ToArray();
             return this;
         }
 
@@ -80,14 +73,8 @@ namespace IF.Ray.WinRT.Models
 
         public Triangle Transform(Matrix m)
         {
-            if (!_transformation.Equals(m))
-            {
-                var transformed = Transformed.Select(t => Vector3.TransformCoordinate(t, m));
-
-                Transformed = transformed.ToArray();
-                _transformation = m;
-            }
-
+            var transformed = Transformed.Select(t => Vector3.TransformCoordinate(t, m));
+            Transformed = transformed.ToArray();
             return this;
         }
 
