@@ -93,10 +93,9 @@ namespace IF.Ray.WinRT.Models
             {
                 // get the vector between the light and the point
                 var lightv = Vector3.Normalize(point - light.Position);
-                var camerav = Vector3.Normalize(ray.Direction);
 
-                // get the angle between the lightray and the cameraray
-                var cosAngle = Vector3.Dot(lightv, camerav);
+                // get the angle between the lightray and the normal of the surface... lambertian reflection
+                var cosAngle = Vector3.Dot(lightv, Plane.Normal);
 
                 // get the texture colour
                 var triangleColour = Color.Blue;

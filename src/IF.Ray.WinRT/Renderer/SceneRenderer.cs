@@ -80,7 +80,7 @@ namespace IF.Ray.WinRT.Renderer
             _scene = new Scene(camera);
             var shapeFactory = new ShapeFactory();
             var square = await shapeFactory.GetShape<Cube>();
-            var cylinder = await shapeFactory.GetShape<Cube>();
+            var cylinder = await shapeFactory.GetShape<Cylinder>();
 
             _scene.Bindings.Add(new SceneBinding(cylinder, new Vector3(-10, 0, 0)));
             _scene.Bindings.Add(new SceneBinding(square, new Vector3(0, 0, 0)));
@@ -200,7 +200,7 @@ namespace IF.Ray.WinRT.Renderer
 
                 if (intersecting.Any())
                 {
-                    var closest = intersecting.OrderBy(i => i.Distance(ray)).First();
+                    var closest = intersecting.OrderByDescending(i => i.Distance(ray)).First();
 
                     return closest.Triangle.Colorise(_scene.Lights, ray, closest.Intersection);
                 }
