@@ -27,7 +27,7 @@
                         Header="Scale"
                         Value="1"
                         Minimum="0.1"
-                        Maximum="5"
+                        Maximum="15"
                         Orientation="Horizontal"
                         ValueChanged="OnZoomSliderChanged"
                         StepFrequency="0.01"/>

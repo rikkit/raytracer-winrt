@@ -84,10 +84,10 @@ namespace IF.Ray.WinRT.Renderer
             _scene = new Scene(camera);
             var shapeFactory = new ShapeFactory();
             var square = await shapeFactory.GetShape<Cube>();
-            //var cylinder = await shapeFactory.GetShape<Cylinder>();
+            var cylinder = await shapeFactory.GetShape<Cylinder>();
 
             _scene.AddShape(square, new Vector4(0, 0, 0, 1));
-            //_scene.AddShape(cylinder, new Vector4(-10, 0, 0, 1));
+            _scene.AddShape(cylinder, new Vector4(-10, 0, 0, 1));
 
             Initialised = true;
         }
@@ -102,7 +102,7 @@ namespace IF.Ray.WinRT.Renderer
             _parametersChanged = false;
 
             // update zoom
-            _scene.Camera.Scale = Zoom;
+            _scene.Camera.Scale = 1/ Zoom;
 
             // get relative rotation amount
             var rotXDiff = _rotationX - _lastRotX;
@@ -114,19 +114,22 @@ namespace IF.Ray.WinRT.Renderer
 
             // rotation
             // get new *relative* world q
-            var worldQ = Quaternion.RotationYawPitchRoll(rotXDiff, rotYDiff, rotZDiff);
-
-
+            var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff, rotXDiff, rotZDiff);
+            
             // transform world q into local rotation q
             var rotateQ = _oldQ*Quaternion.Invert(_oldQ)*worldQ*_oldQ;
             _oldQ = rotateQ;
 
             // get the world projection matrix
             var rotationMatrix = Matrix.RotationQuaternion(rotateQ);
-            var proj = Matrix.PerspectiveFovLH((float) Math.PI/4f, width/(float) height, 0.1f, 100f);
-            var worldViewProj = rotationMatrix*_scene.Camera.Matrix*proj;
+            var worldViewProj = rotationMatrix;
 
             worldViewProj.Transpose();
+
+            foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
+            {
+                triangle.Reset();
+            }
 
             var wb = new WriteableBitmap(width, height);
             var stream = wb.PixelBuffer.AsStream();
@@ -168,10 +171,10 @@ namespace IF.Ray.WinRT.Renderer
                 _scene.Camera.Position.Y + (float)v * pixelSize,
                 _scene.Camera.Position.Z);
 
-            // get the direction of the ray; get normal then scale by projection
+            // get the direction of the ray
             var rayV = _scene.Camera.Target - uvPixel;
 
-            // compute primary ray direction
+            // get the actual ray
             var w = new SharpDX.Ray(uvPixel, rayV);
             
             foreach (var binding in _scene.Bindings)
@@ -179,7 +182,7 @@ namespace IF.Ray.WinRT.Renderer
                 foreach (var triangle in binding.Mesh.Triangles)
                 {
                     Vector3 intersect;
-                    var intersects = triangle.TranslateTo(binding.Position).Intersects(w, out intersect);
+                    var intersects = triangle.TranslateTo(binding.Position).Transform(proj).Intersects(w, out intersect);
 
                     if (intersects)
                     {
