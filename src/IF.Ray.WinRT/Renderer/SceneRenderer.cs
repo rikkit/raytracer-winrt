@@ -26,6 +26,8 @@ namespace IF.Ray.WinRT.Renderer
         private float _lastRotY;
         private float _lastRotZ;
 
+        #region Properties
+
         public float RotationX
         {
             get { return _rotationX; }
@@ -63,6 +65,8 @@ namespace IF.Ray.WinRT.Renderer
         }
 
         public bool Initialised { get; set; }
+
+        #endregion
 
         public SceneRenderer()
         {
@@ -112,7 +116,7 @@ namespace IF.Ray.WinRT.Renderer
             _lastRotX = _rotationX;
             _lastRotY = _rotationY;
             _lastRotZ = _rotationZ;
-
+            
             // rotation
             // get new *relative* world q
             var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff, rotXDiff, rotZDiff);
@@ -122,12 +126,11 @@ namespace IF.Ray.WinRT.Renderer
             _oldQ = rotateQ;
 
             // get the world projection matrix
-            var rotationMatrix = Matrix.RotationQuaternion(rotateQ);
-
-            // TODO scaling with Zoom
-            var worldViewProj = rotationMatrix;
-
+            var worldViewProj = Matrix.RotationQuaternion(rotateQ);
             worldViewProj.Transpose();
+
+            // set the camera zoom
+            _scene.Camera.Scale = 1/Zoom;
 
             foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
             {
@@ -168,15 +171,18 @@ namespace IF.Ray.WinRT.Renderer
         {
             // get camera plane; plane that intersects camera location z-axis
             var cameraPlane = new Plane(_scene.Camera.Position, _scene.Camera.Direction);
+
+            var cameraScaled = Vector3.Divide(_scene.Camera.Position, _scene.Camera.Scale);
+            
             const float pixelSize = 0.1f;
             var u = x - (width * 0.5);
             var v = y - (height * 0.5);
 
             //TODO this isn't right
             var uvPixel = new Vector3(
-                _scene.Camera.Position.X + (float)u * pixelSize,
-                _scene.Camera.Position.Y + (float)v * pixelSize,
-                _scene.Camera.Position.Z);
+                cameraScaled.X + (float)u * pixelSize,
+                cameraScaled.Y + (float)v * pixelSize,
+                cameraScaled.Z);
 
             // get the direction of the ray
             var rayDir = _scene.Camera.Target - uvPixel;
