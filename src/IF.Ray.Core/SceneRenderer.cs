@@ -11,7 +11,7 @@ using SharpDX;
 
 namespace IF.Ray.Core
 {
-    public class SceneRenderer : PropertyChangingBase, IAsyncRenderer
+    public class SceneRenderer : IAsyncRenderer
     {
         private Scene _scene;
 
@@ -25,25 +25,11 @@ namespace IF.Ray.Core
         #region Properties
 
         public bool Initialised { get; set; }
-
-        /// <summary>
-        /// Set of parameters to use for rendering
-        /// Also used for before parameters in the animation
-        /// </summary>
-        public ParameterBinding RenderParameters { get; set; }
-
-        /// <summary>
-        /// Set of parameters used as the end parameters in the animation
-        /// </summary>s
-        public ParameterBinding AnimationParameters { get; set; }
-
+        
         #endregion
 
-        public SceneRenderer(CoreDispatcher dispatcher) : base(dispatcher)
+        public SceneRenderer()
         {
-            RenderParameters = new ParameterBinding(dispatcher);
-            AnimationParameters = new ParameterBinding(dispatcher);
-
             _oldQ = Quaternion.Identity;
         }
 
@@ -64,28 +50,26 @@ namespace IF.Ray.Core
             Initialised = true;
         }
 
-        public async Task<WriteableBitmap> RenderAsync(int width, int height, ProgressToken token)
+        public async Task<WriteableBitmap> RenderAsync(int width, int height, ParameterBinding rp, ProgressToken token)
         {
             var wb = new WriteableBitmap(width, height);
             var stream = wb.PixelBuffer.AsStream();
-
-            await Task.Run(() => Render(stream, width, height, token));
+            await Task.Run(() => Render(stream, width, height, rp, token));
 
             token.Value = 100;
 
-            _lastRender = wb;
-            return _lastRender;
+            return wb;
         }
 
-        private void Render(Stream stream, int width, int height, ProgressToken token)
+        private void Render(Stream stream, int width, int height, ParameterBinding rp, ProgressToken token)
         {
             // get relative rotation amount
-            var rotXDiff = RenderParameters.RotationX - _lastRotX;
-            var rotYDiff = RenderParameters.RotationY - _lastRotY;
-            var rotZDiff = RenderParameters.RotationZ - _lastRotZ;
-            _lastRotX = RenderParameters.RotationX;
-            _lastRotY = RenderParameters.RotationY;
-            _lastRotZ = RenderParameters.RotationZ;
+            var rotXDiff = rp.RotationX - _lastRotX;
+            var rotYDiff = rp.RotationY - _lastRotY;
+            var rotZDiff = rp.RotationZ - _lastRotZ;
+            _lastRotX = rp.RotationX;
+            _lastRotY = rp.RotationY;
+            _lastRotZ = rp.RotationZ;
             
             // rotation
             // get new *relative* world q
@@ -100,7 +84,7 @@ namespace IF.Ray.Core
             worldViewProj.Transpose();
 
             // set the camera zoom
-            _scene.Camera.Scale = 1 / RenderParameters.Zoom;
+            _scene.Camera.Scale = 1 / rp.Zoom;
 
             foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
             {
@@ -126,7 +110,7 @@ namespace IF.Ray.Core
                         stream.WriteByte(color.R);
                         stream.WriteByte(color.A);
 
-                        if (list.Contains(++p))
+                        if (token != null && list.Contains(++p))
                         {
                             token.Value += 10;
                         }
@@ -184,6 +168,25 @@ namespace IF.Ray.Core
             }
 
             return Color.White;
+        }
+
+        public async Task<List<WriteableBitmap>> Animate(int renderWidth, int renderHeight, TimeSpan length, ProgressToken token, ParameterBinding start, ParameterBinding end)
+        {
+            const int parallelism = 2; // render this many at a time       
+            const int fps = 24;
+            var totalFrames = (int)length.TotalSeconds*fps;
+
+            var frames = new List<WriteableBitmap>();
+            for (var frame = 0; frame < totalFrames; frame += parallelism)
+            {
+                var frameBindings = Enumerable.Range(frame, parallelism).Select(i => start.Interpolate(end, i, totalFrames));
+                var renderTasks = frameBindings.Select(b => RenderAsync(renderWidth, renderHeight, b, null));
+
+                var rendered = await Task.WhenAll(renderTasks);
+                frames.AddRange(rendered);
+            }
+
+            return frames;
         }
     }
 }

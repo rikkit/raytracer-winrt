@@ -24,7 +24,7 @@
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RequestedTheme="Light">
             <StackPanel Margin="20,10,20,0">
                 <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" TextWrapping="Wrap" Text="Start" />
-                <common:RenderParametersControl DataContext="{Binding RayTracer.RenderParameters}"
+                <common:RenderParametersControl DataContext="{Binding RenderParameters}"
                                                 Margin="-12,20,-12,0" />
                 <Button HorizontalAlignment="Stretch"
                         Content="Render"
@@ -76,7 +76,7 @@
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RequestedTheme="Light">
             <StackPanel Margin="20,10,20,0">
                 <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" TextWrapping="Wrap" Text="End" />
-                <common:RenderParametersControl DataContext="{Binding RayTracer.AnimationParameters}"
+                <common:RenderParametersControl DataContext="{Binding AnimationParameters}"
                                                 Margin="-12,20,-15,0" />
                 <TextBlock TextWrapping="Wrap" Text="Duration" Style="{StaticResource SubtitleTextBlockStyle}" />
                 <TimePicker HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0" Time="0"

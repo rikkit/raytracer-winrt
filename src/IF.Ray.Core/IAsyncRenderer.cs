@@ -7,6 +7,6 @@ namespace IF.Ray.Core
     public interface IAsyncRenderer
     {
         Task InitialiseSceneAsync();
-        Task<WriteableBitmap> RenderAsync(int width, int height, ProgressToken token);
+        Task<WriteableBitmap> RenderAsync(int width, int height, ParameterBinding rp, ProgressToken token);
     }
 }

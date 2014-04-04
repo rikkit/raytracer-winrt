@@ -1,4 +1,5 @@
-﻿using Windows.UI.Core;
+﻿using System;
+using Windows.UI.Core;
 using IF.Common.Metro.Progress;
 
 namespace IF.Ray.Core
@@ -80,6 +81,18 @@ namespace IF.Ray.Core
             _rotationY = 0;
             _rotationZ = 0;
             _zoom = 1;
+        }
+
+        /// <summary>
+        /// Interpolates between this binding and the provided one
+        /// </summary>
+        /// <param name="end">Binding to interpolate to</param>
+        /// <param name="frame">current frame</param>
+        /// <param name="totalFrames">final frame</param>
+        /// <returns></returns>
+        public ParameterBinding Interpolate(ParameterBinding end, int frame, int totalFrames)
+        {
+            throw new NotImplementedException();
         }
     }
 }

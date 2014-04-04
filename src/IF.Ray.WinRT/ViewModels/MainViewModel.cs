@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using IF.Common.Metro.Mvvm;
@@ -15,6 +16,7 @@ namespace IF.Ray.WinRT.ViewModels
         private bool _canRender;
         private int _renderWidth;
         private int _renderHeight;
+        private TimeSpan _animationLength;
 
         public bool CanRender
         {
@@ -76,30 +78,46 @@ namespace IF.Ray.WinRT.ViewModels
             }
         }
 
-        public SceneRenderer RayTracer
+        public TimeSpan AnimationLength
         {
-            get { return _sceneRenderer; }
-            private set
+            get { return _animationLength; }
+            set
             {
-                if (_sceneRenderer != null &&_sceneRenderer.Equals(value))
+                // bug: this will never be true
+                if (_animationLength.Equals(value))
                 {
                     return;
                 }
 
-                _sceneRenderer = value;
+                var actualTimeSpan = new TimeSpan(0, 0, value.Hours, value.Minutes);
+                _animationLength = actualTimeSpan;
                 RaisePropertyChanged();
             }
         }
 
+        /// <summary>
+        /// Set of parameters to use for rendering
+        /// Also used for before parameters in the animation
+        /// </summary>
+        public ParameterBinding RenderParameters { get; set; }
+
+        /// <summary>
+        /// Set of parameters used as the end parameters in the animation
+        /// </summary>s
+        public ParameterBinding AnimationParameters { get; set; }
+
         public ICommand RenderCommand { get; set; }
+        public ICommand AnimateCommand { get; set; }
 
         public MainViewModel(IProgressAggregator progress) : base(progress)
         {
-            RayTracer = new SceneRenderer(UiDispatcher);
+            _sceneRenderer = new SceneRenderer();
             RenderWidth = 400;
             RenderHeight = 300;
 
             RenderCommand = new AsyncDelegateCommand(Render);
+            RenderParameters = new ParameterBinding(UiDispatcher);
+            AnimationParameters = new ParameterBinding(UiDispatcher);
         }
         
         public async override Task AfterPageLoadedAsync()
@@ -118,7 +136,7 @@ namespace IF.Ray.WinRT.ViewModels
             var token = Progress.RaiseLoading("Rendering", false);
 
             CanRender = false;
-            var image = await _sceneRenderer.RenderAsync(RenderWidth, RenderHeight, token);
+            var image = await _sceneRenderer.RenderAsync(RenderWidth, RenderHeight, RenderParameters, token);
 
             RaytracedImage = null;
             RaytracedImage = image;
@@ -126,6 +144,24 @@ namespace IF.Ray.WinRT.ViewModels
             Progress.Finalise(token);
 
             CanRender = true;
+        }
+
+        private async Task Animate()
+        {
+            if (!CanRender)
+            {
+                return;
+            }
+
+            var token = Progress.RaiseLoading("Animating", false);
+
+            CanRender = false;
+            var frames = await _sceneRenderer.Animate(RenderWidth, RenderHeight, AnimationLength, token, RenderParameters, AnimationParameters);
+
+            throw new NotImplementedException();
+            CanRender = true;
+
+            Progress.Finalise(token);
         }
     }
 }
