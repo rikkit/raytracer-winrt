@@ -7,7 +7,7 @@ using System.Windows.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using IF.Common.Metro.Mvvm;
 using IF.Common.Metro.Progress;
-using IF.Ray.WinRT.Renderer;
+using IF.Ray.Core;
 
 namespace IF.Ray.WinRT.ViewModels
 {

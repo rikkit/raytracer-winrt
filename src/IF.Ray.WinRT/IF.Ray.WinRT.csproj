@@ -45,9 +45,6 @@
     <Reference Include="Ninject.Platform">
       <HintPath>..\..\packages\Portable.Ninject.3.2\lib\netcore45\Ninject.Platform.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>..\..\lib\SharpDX\SharpDX.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\BindableBase.cs" />
@@ -60,21 +57,11 @@
     </Compile>
     <Compile Include="Common\CompositionTargetEx.cs" />
     <Compile Include="Injection\Modules.cs" />
-    <Compile Include="Models\Camera.cs" />
-    <Compile Include="Models\Light.cs" />
     <Compile Include="Pages\PageBase.cs" />
     <Compile Include="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\Scene.cs" />
-    <Compile Include="Models\SceneBinding.cs" />
-    <Compile Include="Models\Mesh.cs" />
-    <Compile Include="Models\ShapeFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Renderer\IAsyncRenderer.cs" />
-    <Compile Include="Renderer\PixelStream.cs" />
-    <Compile Include="Renderer\RenderEx.cs" />
-    <Compile Include="Renderer\SceneRenderer.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
   </ItemGroup>
@@ -136,6 +123,10 @@
     <ProjectReference Include="..\..\lib\inflatable-toolkit\src\IF.Common.Metro\IF.Common.Metro.csproj">
       <Project>{948802f9-6d48-489c-8500-f6d2c84411bd}</Project>
       <Name>IF.Common.Metro</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\IF.Ray.Core\IF.Ray.Core.csproj">
+      <Project>{0e854a04-a371-4b5a-be52-98679f5404cd}</Project>
+      <Name>IF.Ray.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">

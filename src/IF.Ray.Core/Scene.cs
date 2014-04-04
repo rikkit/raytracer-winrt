@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using SharpDX;
 
-namespace IF.Ray.WinRT.Models
+namespace IF.Ray.Core
 {
     public class Scene
     {

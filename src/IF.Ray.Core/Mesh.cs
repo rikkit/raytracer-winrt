@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SharpDX;
 
-namespace IF.Ray.WinRT.Models
+namespace IF.Ray.Core
 {
     public abstract class Mesh
     {

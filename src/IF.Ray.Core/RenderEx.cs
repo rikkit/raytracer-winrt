@@ -1,6 +1,6 @@
 using SharpDX;
 
-namespace IF.Ray.WinRT.Renderer
+namespace IF.Ray.Core
 {
     public static class RenderEx
     {

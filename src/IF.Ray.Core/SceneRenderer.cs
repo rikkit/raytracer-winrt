@@ -2,14 +2,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using IF.Common.Metro.Progress;
-using IF.Ray.WinRT.Models;
-using SharpDX;
-using System;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
+using IF.Common.Metro.Progress;
+using SharpDX;
 
-namespace IF.Ray.WinRT.Renderer
+namespace IF.Ray.Core
 {
     public class SceneRenderer : IAsyncRenderer
     {

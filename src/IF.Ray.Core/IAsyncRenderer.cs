@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
 using IF.Common.Metro.Progress;
 
-namespace IF.Ray.WinRT.Renderer
+namespace IF.Ray.Core
 {
     public interface IAsyncRenderer
     {

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
 using SharpDX;
 
-namespace IF.Ray.WinRT.Models
+namespace IF.Ray.Core
 {
     public class ShapeFactory
     {

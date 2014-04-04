@@ -1,6 +1,6 @@
 ﻿using SharpDX;
 
-namespace IF.Ray.WinRT.Models
+namespace IF.Ray.Core
 {
     public class SceneBinding
     {
