@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using IF.Common.Metro.Mvvm;
 using IF.Common.Metro.Progress;
 using IF.Ray.Core;
+using Ninject.Parameters;
 
 namespace IF.Ray.WinRT.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly SceneRenderer _sceneRenderer;
+        private SceneRenderer _sceneRenderer;
         private WriteableBitmap _raytracedImage;
         private bool _canRender;
         private int _renderWidth;
@@ -79,62 +76,17 @@ namespace IF.Ray.WinRT.ViewModels
             }
         }
 
-        public float RotationX
+        public SceneRenderer RayTracer
         {
-            get { return _sceneRenderer.RotationX.Value; }
-            set
+            get { return _sceneRenderer; }
+            private set
             {
-                if (_sceneRenderer.RotationX.Equals(value))
+                if (_sceneRenderer != null &&_sceneRenderer.Equals(value))
                 {
                     return;
                 }
 
-                _sceneRenderer.RotationX = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public float RotationY
-        {
-            get { return _sceneRenderer.RotationY.Value; }
-            set
-            {
-                if (_sceneRenderer.RotationY.Equals(value))
-                {
-                    return;
-                }
-
-                _sceneRenderer.RotationY = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public float RotationZ
-        {
-            get { return _sceneRenderer.RotationZ.Value; }
-            set
-            {
-                if (_sceneRenderer.RotationZ.Equals(value))
-                {
-                    return;
-                }
-
-                _sceneRenderer.RotationZ = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public float Zoom
-        {
-            get { return _sceneRenderer.Zoom.Value; }
-            set
-            {
-                if (_sceneRenderer.Zoom.Equals(value))
-                {
-                    return;
-                }
-
-                _sceneRenderer.Zoom = value;
+                _sceneRenderer = value;
                 RaisePropertyChanged();
             }
         }
@@ -143,8 +95,7 @@ namespace IF.Ray.WinRT.ViewModels
 
         public MainViewModel(IProgressAggregator progress) : base(progress)
         {
-            _sceneRenderer = new SceneRenderer();
-            Zoom = 1;
+            RayTracer = new SceneRenderer(UiDispatcher);
             RenderWidth = 400;
             RenderHeight = 300;
 
@@ -159,6 +110,11 @@ namespace IF.Ray.WinRT.ViewModels
 
         private async Task Render()
         {
+            if (!CanRender)
+            {
+                return;
+            }
+
             var token = Progress.RaiseLoading("Rendering", false);
 
             CanRender = false;

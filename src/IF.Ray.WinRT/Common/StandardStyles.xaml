@@ -976,4 +976,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <DataTemplate x:Key="ParameterSlidersHeaderTemplate">
+        <TextBlock HorizontalAlignment="Left" Style="{StaticResource SubheaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding}" VerticalAlignment="Top"/>
+    </DataTemplate>
 </ResourceDictionary>

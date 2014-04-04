@@ -4,23 +4,19 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
 using IF.Common.Metro.Progress;
 using SharpDX;
 
 namespace IF.Ray.Core
 {
-    public class SceneRenderer : IAsyncRenderer
+    public class SceneRenderer : PropertyChangingBase, IAsyncRenderer
     {
         private Scene _scene;
 
         private Quaternion _oldQ;
-
-        private SceneParameter<float> _zoom;
-        private SceneParameter<float> _rotationX;
-        private SceneParameter<float> _rotationY;
-        private SceneParameter<float> _rotationZ;
-
+        
         private WriteableBitmap _lastRender;
         private float _lastRotX;
         private float _lastRotY;
@@ -28,53 +24,25 @@ namespace IF.Ray.Core
 
         #region Properties
 
-        public SceneParameter<float> RotationX
-        {
-            get { return _rotationX; }
-            set
-            {
-                _rotationX = value;
-            }
-        }
-
-        public SceneParameter<float> RotationY
-        {
-            get { return _rotationY; }
-            set
-            {
-                _rotationY = value;
-            }
-        }
-
-        public SceneParameter<float> RotationZ
-        {
-            get { return _rotationZ; }
-            set
-            {
-                _rotationZ = value;
-            }
-        }
-
-        public SceneParameter<float> Zoom
-        {
-            get { return _zoom; }
-            set
-            {
-                _zoom = value;
-            }
-        }
-
         public bool Initialised { get; set; }
+
+        /// <summary>
+        /// Set of parameters to use for rendering
+        /// Also used for before parameters in the animation
+        /// </summary>
+        public ParameterBinding RenderParameters { get; set; }
+
+        /// <summary>
+        /// Set of parameters used as the end parameters in the animation
+        /// </summary>s
+        public ParameterBinding AnimationParameters { get; set; }
 
         #endregion
 
-        public SceneRenderer()
+        public SceneRenderer(CoreDispatcher dispatcher) : base(dispatcher)
         {
-            // set the defaults for these parameters
-            _rotationX = 0;
-            _rotationY = 0;
-            _rotationZ = 0;
-            _zoom = 1;
+            RenderParameters = new ParameterBinding(dispatcher);
+            AnimationParameters = new ParameterBinding(dispatcher);
 
             _oldQ = Quaternion.Identity;
         }
@@ -112,16 +80,16 @@ namespace IF.Ray.Core
         private void Render(Stream stream, int width, int height, ProgressToken token)
         {
             // get relative rotation amount
-            var rotXDiff = _rotationX - _lastRotX;
-            var rotYDiff = _rotationY - _lastRotY;
-            var rotZDiff = _rotationZ - _lastRotZ;
-            _lastRotX = _rotationX.Value;
-            _lastRotY = _rotationY.Value;
-            _lastRotZ = _rotationZ.Value;
+            var rotXDiff = RenderParameters.RotationX - _lastRotX;
+            var rotYDiff = RenderParameters.RotationY - _lastRotY;
+            var rotZDiff = RenderParameters.RotationZ - _lastRotZ;
+            _lastRotX = RenderParameters.RotationX;
+            _lastRotY = RenderParameters.RotationY;
+            _lastRotZ = RenderParameters.RotationZ;
             
             // rotation
             // get new *relative* world q
-            var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff.Value, rotXDiff.Value, rotZDiff.Value);
+            var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff, rotXDiff, rotZDiff);
 
             // transform world q into local rotation q
             var rotateQ = _oldQ*Quaternion.Invert(_oldQ)*worldQ*_oldQ;
@@ -132,7 +100,7 @@ namespace IF.Ray.Core
             worldViewProj.Transpose();
 
             // set the camera zoom
-            _scene.Camera.Scale = 1 / Zoom.Value;
+            _scene.Camera.Scale = 1 / RenderParameters.Zoom;
 
             foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
             {

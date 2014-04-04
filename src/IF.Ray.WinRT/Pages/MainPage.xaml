@@ -6,82 +6,81 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="using:IF.Ray.WinRT.ViewModels"
     xmlns:pages="using:IF.Ray.WinRT.Pages"
-    mc:Ignorable="d"    
+    xmlns:common="using:IF.Ray.WinRT.Common"
+    mc:Ignorable="d"
     d:DesignWidth="1366"
     d:DesignHeight="768"
-    d:DataContext="{d:DesignInstance viewModels:MainViewModel}">
-    
+    d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
     <Grid x:Name="PageGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition />
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="1"
+        <Border Grid.Column="0"
+                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RequestedTheme="Light">
+            <StackPanel Margin="20,10,20,0">
+                <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" TextWrapping="Wrap" Text="Start" />
+                <common:RenderParametersControl DataContext="{Binding RayTracer.RenderParameters}"
+                                                Margin="-12,20,-12,0" />
+                <Button HorizontalAlignment="Stretch"
+                        Content="Render"
+                        Command="{Binding RenderCommand}" />
+                <Button HorizontalAlignment="Stretch"
+                        Content="Animate"
+                        Command="{Binding RenderCommand}" />
+                <ProgressBar Visibility="{Binding Progress.IsLoading, Converter={StaticResource BooleanToVisibility}}"
+                             Value="{Binding Progress.CurrentInProgress.Value}" />
+            </StackPanel>
+        </Border>
+        <Grid Grid.Column="1">
+            <Border
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
-                BorderThickness="1">
-            <Border.BorderBrush>
-                <SolidColorBrush Color="White"/>
-            </Border.BorderBrush>
-            <Image MinHeight="200"
-                   MinWidth="200"
-                   Stretch="None"
-                   Width="{Binding RenderWidth}"
-                   Height="{Binding RenderHeight}"
-                   Source="{Binding RaytracedImage}"/>
-        </Border>
-        
-        <Border Grid.Column="0"
-                Background="{StaticResource AppBarBackgroundThemeBrush}">
-            <StackPanel Margin="20">
+                BorderThickness="1" BorderBrush="White">
+                <Image MinHeight="200"
+                       MinWidth="200"
+                       Stretch="None"
+                       Width="{Binding RenderWidth}"
+                       Height="{Binding RenderHeight}"
+                       Source="{Binding RaytracedImage}" />
+            </Border>
+            <Grid HorizontalAlignment="Left" Height="400" VerticalAlignment="Bottom" Width="400">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5*" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="5*" />
+                </Grid.ColumnDefinitions>
+                <Slider x:Name="HeightSlider"
+                        Value="{Binding RenderHeight, Mode=TwoWay}"
+                        Minimum="200"
+                        Maximum="800"
+                        Orientation="Vertical"
+                        StepFrequency="10" HorizontalAlignment="Left" TickFrequency="50" TickPlacement="BottomRight" />
                 <Slider x:Name="WidthSlider"
-                        Header="Render Width"
                         Value="{Binding RenderWidth, Mode=TwoWay}"
                         Minimum="200"
                         Maximum="800"
                         Orientation="Horizontal"
-                        StepFrequency="0.01"/>
-                <Slider x:Name="HeightSlider"
-                        Header="Render Height"
-                        Value="{Binding RenderHeight, Mode=TwoWay}"
-                        Minimum="200"
-                        Maximum="800"
-                        Orientation="Horizontal"
-                        StepFrequency="0.01"/>
-                <Slider x:Name="ZoomSlider"
-                        Header="Scale"
-                        Value="{Binding Zoom, Mode=TwoWay}"
-                        Minimum="0.1"
-                        Maximum="5"
-                        Orientation="Horizontal"
-                        StepFrequency="0.01"/>
-                <Slider x:Name="RotationXSlider"
-                        Header="X Rotation"
-                        Value="{Binding RotationX, Mode=TwoWay}"
-                        Minimum="-3.2"
-                        Maximum="3.2"
-                        Orientation="Horizontal"
-                        StepFrequency="0.01"/>
-                <Slider x:Name="RotationYSlider"
-                        Header="Y Rotation"
-                        Value="{Binding RotationY, Mode=TwoWay}"
-                        Minimum="-3.2"
-                        Maximum="3.2"
-                        Orientation="Horizontal"
-                        StepFrequency="0.01"/>
-                <Slider x:Name="RotationZSlider"
-                        Header="Z Rotation"
-                        Value="{Binding RotationZ, Mode=TwoWay}"
-                        Minimum="-3.2"
-                        Maximum="3.2"
-                        Orientation="Horizontal"
-                        StepFrequency="0.01"/>
-                <Button HorizontalAlignment="Stretch"
-                        Content="Render"
-                        Command="{Binding RenderCommand}"/>
-                <ProgressBar Visibility="{Binding Progress.IsLoading, Converter={StaticResource BooleanToVisibility}}"
-                             Value="{Binding Progress.CurrentInProgress.Value}"/>
+                        StepFrequency="10" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="1" TickFrequency="50"
+                        TickPlacement="TopLeft" />
+            </Grid>
+        </Grid>
+        <Border Grid.Column="2"
+                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RequestedTheme="Light">
+            <StackPanel Margin="20,10,20,0">
+                <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" TextWrapping="Wrap" Text="End" />
+                <common:RenderParametersControl DataContext="{Binding RayTracer.AnimationParameters}"
+                                                Margin="-12,20,-15,0" />
+                <TextBlock TextWrapping="Wrap" Text="Duration" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TimePicker HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0" Time="0"
+                            ClockIdentifier="24HourClock" />
             </StackPanel>
         </Border>
     </Grid>

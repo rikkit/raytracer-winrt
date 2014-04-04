@@ -105,11 +105,11 @@
     <Compile Include="IAsyncRenderer.cs" />
     <Compile Include="Light.cs" />
     <Compile Include="Mesh.cs" />
+    <Compile Include="ParameterBinding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RenderEx.cs" />
     <Compile Include="Scene.cs" />
     <Compile Include="SceneBinding.cs" />
-    <Compile Include="SceneParameter.cs" />
     <Compile Include="SceneRenderer.cs" />
     <Compile Include="ShapeFactory.cs" />
     <Compile Include="ZBufferItem.cs" />
