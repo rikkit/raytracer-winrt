@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,19 +15,20 @@ namespace IF.Ray.Core
         private Scene _scene;
 
         private Quaternion _oldQ;
-        private float _rotationX;
-        private float _rotationY;
-        private float _rotationZ;
+
+        private SceneParameter<float> _zoom;
+        private SceneParameter<float> _rotationX;
+        private SceneParameter<float> _rotationY;
+        private SceneParameter<float> _rotationZ;
 
         private WriteableBitmap _lastRender;
-        private float _zoom;
         private float _lastRotX;
         private float _lastRotY;
         private float _lastRotZ;
 
         #region Properties
 
-        public float RotationX
+        public SceneParameter<float> RotationX
         {
             get { return _rotationX; }
             set
@@ -35,7 +37,7 @@ namespace IF.Ray.Core
             }
         }
 
-        public float RotationY
+        public SceneParameter<float> RotationY
         {
             get { return _rotationY; }
             set
@@ -44,7 +46,7 @@ namespace IF.Ray.Core
             }
         }
 
-        public float RotationZ
+        public SceneParameter<float> RotationZ
         {
             get { return _rotationZ; }
             set
@@ -53,7 +55,7 @@ namespace IF.Ray.Core
             }
         }
 
-        public float Zoom
+        public SceneParameter<float> Zoom
         {
             get { return _zoom; }
             set
@@ -68,10 +70,12 @@ namespace IF.Ray.Core
 
         public SceneRenderer()
         {
-            RotationX = 0;
-            RotationY = 0;
-            RotationZ = 0;
-            Zoom = 1;
+            // set the defaults for these parameters
+            _rotationX = 0;
+            _rotationY = 0;
+            _rotationZ = 0;
+            _zoom = 1;
+
             _oldQ = Quaternion.Identity;
         }
 
@@ -111,13 +115,13 @@ namespace IF.Ray.Core
             var rotXDiff = _rotationX - _lastRotX;
             var rotYDiff = _rotationY - _lastRotY;
             var rotZDiff = _rotationZ - _lastRotZ;
-            _lastRotX = _rotationX;
-            _lastRotY = _rotationY;
-            _lastRotZ = _rotationZ;
+            _lastRotX = _rotationX.Value;
+            _lastRotY = _rotationY.Value;
+            _lastRotZ = _rotationZ.Value;
             
             // rotation
             // get new *relative* world q
-            var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff, rotXDiff, rotZDiff);
+            var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff.Value, rotXDiff.Value, rotZDiff.Value);
 
             // transform world q into local rotation q
             var rotateQ = _oldQ*Quaternion.Invert(_oldQ)*worldQ*_oldQ;
@@ -128,7 +132,7 @@ namespace IF.Ray.Core
             worldViewProj.Transpose();
 
             // set the camera zoom
-            _scene.Camera.Scale = 1/Zoom;
+            _scene.Camera.Scale = 1 / Zoom.Value;
 
             foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
             {
@@ -212,23 +216,6 @@ namespace IF.Ray.Core
             }
 
             return Color.White;
-        }
-    }
-
-    public class ZBufferItem
-    {
-        public Triangle Triangle { get; set; }
-        public Vector3 Intersection { get; set; }
-
-        public ZBufferItem(Triangle t, Vector3 i)
-        {
-            Triangle = t;
-            Intersection = i;
-        }
-
-        public float Distance(SharpDX.Ray ray)
-        {
-            return Vector3.Distance(ray.Position, Intersection);
         }
     }
 }

@@ -81,7 +81,7 @@ namespace IF.Ray.WinRT.ViewModels
 
         public float RotationX
         {
-            get { return _sceneRenderer.RotationX; }
+            get { return _sceneRenderer.RotationX.Value; }
             set
             {
                 if (_sceneRenderer.RotationX.Equals(value))
@@ -96,7 +96,7 @@ namespace IF.Ray.WinRT.ViewModels
 
         public float RotationY
         {
-            get { return _sceneRenderer.RotationY; }
+            get { return _sceneRenderer.RotationY.Value; }
             set
             {
                 if (_sceneRenderer.RotationY.Equals(value))
@@ -111,7 +111,7 @@ namespace IF.Ray.WinRT.ViewModels
 
         public float RotationZ
         {
-            get { return _sceneRenderer.RotationZ; }
+            get { return _sceneRenderer.RotationZ.Value; }
             set
             {
                 if (_sceneRenderer.RotationZ.Equals(value))
@@ -126,7 +126,7 @@ namespace IF.Ray.WinRT.ViewModels
 
         public float Zoom
         {
-            get { return _sceneRenderer.Zoom; }
+            get { return _sceneRenderer.Zoom.Value; }
             set
             {
                 if (_sceneRenderer.Zoom.Equals(value))
