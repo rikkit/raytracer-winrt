@@ -1,21 +1,27 @@
+using IF.Ray.Core.Shapes;
 using SharpDX;
 
 namespace IF.Ray.Core
 {
     public class ZBufferItem
     {
-        public Triangle Triangle { get; set; }
+        public IOccluder Primitive { get; set; }
         public Vector3 Intersection { get; set; }
+        public Vector3 Translation { get; set; }
 
-        public ZBufferItem(Triangle t, Vector3 i)
+        public ZBufferItem(IOccluder o, Vector3 i, Vector3 t)
         {
-            Triangle = t;
+            Primitive = o;
             Intersection = i;
+            Translation = t;
         }
 
-        public float Distance(SharpDX.Ray ray)
+        /// <summary>
+        /// The distance between provided vector and point of intersection
+        /// </summary>
+        public float Distance(Vector3 rayOrigin)
         {
-            return Vector3.Distance(ray.Position, Intersection);
+            return Vector3.Distance(rayOrigin, Intersection);
         }
     }
 }

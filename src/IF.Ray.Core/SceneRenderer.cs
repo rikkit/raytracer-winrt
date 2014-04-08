@@ -7,17 +7,19 @@ using System.Threading.Tasks;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
 using IF.Common.Metro.Progress;
+using IF.Ray.Core.Shapes;
 using SharpDX;
+using Plane = IF.Ray.Core.Shapes.Plane;
 
 namespace IF.Ray.Core
 {
     public class SceneRenderer : IAsyncRenderer
     {
+        private readonly IShapeFactory _shapeFactory;
         private Scene _scene;
 
         private Quaternion _oldQ;
         
-        private WriteableBitmap _lastRender;
         private float _lastRotX;
         private float _lastRotY;
         private float _lastRotZ;
@@ -31,21 +33,24 @@ namespace IF.Ray.Core
         public SceneRenderer()
         {
             _oldQ = Quaternion.Identity;
+            _shapeFactory = new ShapeFactory();
         }
 
         public async Task InitialiseSceneAsync()
         {
             var camera = new Camera(new Vector3(0, 6, -10), new Vector3(0, -6, 10));
-
             _scene = new Scene(camera);
-            var shapeFactory = new ShapeFactory();
-            var square = await shapeFactory.GetShape<Cube>();
-            var cylinder = await shapeFactory.GetShape<Cylinder>();
 
-            _scene.Bindings.Add(new SceneBinding(cylinder, new Vector3(-10, 0, 0)));
-            _scene.Bindings.Add(new SceneBinding(square, new Vector3(0, 0, 0)));
+            var square = await _shapeFactory.GetShape<Cube>();
+            var cylinder = await _shapeFactory.GetShape<Cylinder>();
 
-            _scene.Lights.Add(new Light(new Vector3(0, 50, -5), Color.White, 1));
+            var plane = new Shapes.Plane(new Vector3(0,1,0), new Vector3(0, 1, 0));
+
+            _scene.AddBinding(cylinder, new Vector3(-10, 0, 0));
+            _scene.AddBinding(square, Vector3.Zero);
+            //_scene.AddBinding(plane, Vector3.Zero);
+
+            _scene.Lights.Add(new Light(new Vector3(0, 0, -50), Color.White, 1));
 
             Initialised = true;
         }
@@ -85,12 +90,7 @@ namespace IF.Ray.Core
 
             // set the camera zoom
             _scene.Camera.Scale = 1 / rp.Zoom;
-
-            foreach (var triangle in _scene.Bindings.SelectMany(binding => binding.Mesh.Triangles))
-            {
-                triangle.Reset();
-            }
-
+            
             if (stream.CanWrite)
             {
                 stream.Position = 0;
@@ -142,31 +142,17 @@ namespace IF.Ray.Core
             var rayDir = _scene.Camera.Target - uvPixel;
 
             // get the actual ray
-            var ray = new SharpDX.Ray(uvPixel, rayDir);
-            
-            foreach (var binding in _scene.Bindings)
+            var ray = new Shapes.Ray(uvPixel, rayDir);
+
+            var items = _scene.Trace(ray, _scene.Origin);
+
+            if (items.Count > 0)
             {
-                var intersecting = new List<ZBufferItem>();
+                // get the colour of the closest item
 
-                foreach (var triangle in binding.Mesh.Triangles)
-                {
-                    Vector3 intersection;
-                    var intersects = triangle.TranslateTo(binding.Position).Transform(proj).Intersects(ray, out intersection);
-
-                    if (intersects)
-                    {
-                        intersecting.Add(new ZBufferItem(triangle, intersection));
-                    }
-                }
-
-                if (intersecting.Any())
-                {
-                    var closest = intersecting.OrderByDescending(i => i.Distance(ray)).First();
-
-                    return closest.Triangle.Colorise(_scene.Lights, ray, closest.Intersection);
-                }
+                var closest = items.OrderByDescending(d => d.Distance(ray.Origin)).First();
+                return closest.Primitive.Colorise(_scene, ray, closest.Translation, closest.Intersection);
             }
-
             return Color.White;
         }
 

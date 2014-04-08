@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using IF.Ray.Core.Shapes;
 using SharpDX;
+using Plane = IF.Ray.Core.Shapes.Plane;
 
 namespace IF.Ray.Core
 {
-    public class Scene
+    public class Scene : IOccluder
     {
         private readonly IList<SceneBinding> _shapes;
         private readonly IList<Light> _lights;
@@ -18,7 +21,7 @@ namespace IF.Ray.Core
             get { return _shapes.Count; }
         }
 
-        public Vector4 Origin { get; private set; }
+        public Vector3 Origin { get; private set; }
         public Camera Camera { get; set; }
 
         public IList<Light> Lights
@@ -28,10 +31,32 @@ namespace IF.Ray.Core
 
         public Scene(Camera camera)
         {
-            Origin = new Vector4(0, 0, 0, 0);
+            Origin = new Vector3(0, 0, 0);
             _shapes = new List<SceneBinding>();
             _lights = new List<Light>();
             Camera = camera;
+        }
+
+        public void AddBinding(IOccluder plane, Vector3 zero)
+        {
+            Bindings.Add(new SceneBinding(plane, zero));
+        }
+        
+        public IList<ZBufferItem> Trace(Shapes.Ray ray, Vector3 translation)
+        {
+            var intersecting = new List<ZBufferItem>();
+            foreach (var binding in Bindings)
+            {
+                var bindingIntersecting = binding.Shape.Trace(ray, binding.Position);
+                intersecting.AddRange(bindingIntersecting);
+            }
+
+            return intersecting;
+        }
+
+        public Color Colorise(Scene scene, Shapes.Ray ray, Vector3 translation, Vector3 intersection)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

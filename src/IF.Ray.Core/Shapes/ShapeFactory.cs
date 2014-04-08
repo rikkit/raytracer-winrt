@@ -5,53 +5,49 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using SharpDX;
 
-namespace IF.Ray.Core
+namespace IF.Ray.Core.Shapes
 {
-    public class ShapeFactory
+    public class ShapeFactory : IShapeFactory
     {
         private const string ObjFolderPath = "ms-appx:///Assets/Objects";
 
         /// <summary>
-        /// *Synchronous* wrapper for loading an obj
+        /// There must be a better way of doing this
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> GetShape<T>() where T : Mesh, new()
+        public async Task<IOccluder> GetShape<T>() where T : IOccluder, new()
         {
-            var fileUriString = string.Format("{0}/{1}", ObjFolderPath, GetFilePathForType(typeof(T)));
+            var type = typeof (T);
+            if (type == typeof (Cube))
+            {
+                return await LoadShape<Cube>("cube.obj");
+            }
+            else if (type == typeof (Cylinder))
+            {
+                return await LoadShape<Cylinder>("cylinder.obj");
+            }
+            else if (type == typeof (Plane))
+            {
+                return new Plane();
+            }
+            else return null;
+        }
+
+        private async Task<T> LoadShape<T>(string filename) where T : Mesh, new()
+        {
+            var fileUriString = string.Format("{0}/{1}", ObjFolderPath, filename);
             var fileUri = new Uri(fileUriString, UriKind.Absolute);
             var file = await StorageFile.GetFileFromApplicationUriAsync(fileUri);
             var result = await LoadObjFileAsync(file);
 
-            return LoadResultToShape<T>(result);
-        }
-
-        private static string GetFilePathForType(Type type)
-        {
-            if (type == typeof(Cube))
-            {
-                return "cube.obj";
-            }
-            else if (type == typeof (Cylinder))
-            {
-                return "cylinder.obj";
-            }
-            else
-            {
-                throw new InvalidOperationException(string.Format("Shape {0} isnae supported", type));
-            }
-        }
-
-        private static T LoadResultToShape<T>(IList<Triangle> mesh) where T : Mesh, new()
-        {
             var shape = new T
             {
-                Triangles = mesh
+                Triangles = result
             };
-
             return shape;
         }
-
+        
         private async Task<List<Triangle>> LoadObjFileAsync(StorageFile file)
         {
             var mesh = new List<Triangle>();

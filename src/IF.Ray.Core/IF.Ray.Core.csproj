@@ -104,7 +104,12 @@
     <Compile Include="Camera.cs" />
     <Compile Include="IAsyncRenderer.cs" />
     <Compile Include="Light.cs" />
-    <Compile Include="Mesh.cs" />
+    <Compile Include="Shapes\Cube.cs" />
+    <Compile Include="Shapes\Cylinder.cs" />
+    <Compile Include="Shapes\IPrimitive.cs" />
+    <Compile Include="Shapes\IOccluder.cs" />
+    <Compile Include="Shapes\IShapeFactory.cs" />
+    <Compile Include="Shapes\Mesh.cs" />
     <Compile Include="ParameterBinding.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -112,19 +117,22 @@
     <Compile Include="Scene.cs" />
     <Compile Include="SceneBinding.cs" />
     <Compile Include="SceneRenderer.cs" />
-    <Compile Include="ShapeFactory.cs" />
+    <Compile Include="Shapes\Plane.cs" />
+    <Compile Include="Shapes\Ray.cs" />
+    <Compile Include="Shapes\ShapeFactory.cs" />
+    <Compile Include="Shapes\Triangle.cs" />
     <Compile Include="ZBufferItem.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="SharpDX">
-      <HintPath>..\lib\SharpDX\SharpDX.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\lib\inflatable-toolkit\src\IF.Common.Metro\IF.Common.Metro.csproj">
       <Project>{948802f9-6d48-489c-8500-f6d2c84411bd}</Project>
       <Name>IF.Common.Metro</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="SharpDX">
+      <HintPath>..\..\lib\SharpDX\SharpDX.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>
