@@ -44,11 +44,11 @@ namespace IF.Ray.Core
             var square = await _shapeFactory.GetShape<Cube>();
             var cylinder = await _shapeFactory.GetShape<Cylinder>();
 
-            var plane = new Shapes.Plane(new Vector3(10,1,0), new Vector3(0, 1, 0));
+            var plane = new Shapes.Plane(new Vector3(2,2,2), new Vector3(1,0,0), new Vector3(0,0,1));
 
             _scene.AddBinding(cylinder, new Vector3(-10, 0, 0));
             _scene.AddBinding(square, Vector3.Zero);
-            //_scene.AddBinding(plane, Vector3.Zero);
+            _scene.AddBinding(plane, Vector3.Zero);
 
             _scene.Lights.Add(new Light(new Vector3(0, 0, -50), Color.White, 1));
 
@@ -123,9 +123,6 @@ namespace IF.Ray.Core
 
         private Color TraceRay(Matrix proj, int x, int y, int width, int height)
         {
-            // get camera plane; plane that intersects camera location z-axis
-            var cameraPlane = new Plane(_scene.Camera.Position, _scene.Camera.Direction);
-
             var cameraScaled = Vector3.Divide(_scene.Camera.Position, _scene.Camera.Scale);
             
             const float pixelSize = 0.1f;

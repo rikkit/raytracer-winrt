@@ -27,10 +27,6 @@ namespace IF.Ray.Core.Shapes
             {
                 return await LoadShape<Cylinder>("cylinder.obj");
             }
-            else if (type == typeof (Plane))
-            {
-                return new Plane();
-            }
             else return null;
         }
 

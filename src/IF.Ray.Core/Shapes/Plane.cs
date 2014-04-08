@@ -7,10 +7,11 @@ namespace IF.Ray.Core.Shapes
 {
     public class Plane : IOccluder
     {
-        public static Plane XY = new Plane(Vector3.Zero, Vector3.UnitZ);
+        public static Plane XY = new Plane(Vector3.Zero, Vector3.UnitX, Vector3.UnitY);
+
+        public Vector3[] _points;
 
         private Vector3 _normal;
-        public Vector3 Position { get; set; }
 
         /// <summary>
         /// Plane normal, setting ensures it is in normalised form
@@ -29,32 +30,39 @@ namespace IF.Ray.Core.Shapes
             }
         }
 
-        public float Width { get; set; }
-
-        public Plane()
+        public Vector3 Position
         {
-            Width = 5;
+            get { return _points[0]; }
         }
 
-        public Plane(Vector3 position, Vector3 normal)
+        public float Width { get; set; }
+        
+        /// <summary>
+        /// Define a plane using three points
+        /// First one is treated as the origin
+        /// </summary>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <param name="p3"></param>
+        public Plane(Vector3 p1, Vector3 p2, Vector3 p3)
         {
-            Position = position;
-            Normal = normal;
+            _points = new[] {p1, p2, p3};
             Width = 5;
         }
 
         public IList<ZBufferItem> Trace(Ray ray, Vector3 translation)
         {
-            // project the plane to XY
-            var pProj = Plane.Project(XY, Position + translation);
+            // move this plane to the origin, now pProj is on the XY plane
+            var planeVector = Position + translation;
             var hw = Width/2;
 
             // calculate bounds on the xy plane, 
             // and project each one back to our original plane
-            var b1 = Project(this, Vector3.Add(pProj, new Vector3(-hw, +hw, 0)));
-            var b2 = Project(this, Vector3.Add(pProj, new Vector3(+hw, +hw, 0)));
-            var b3 = Project(this, Vector3.Add(pProj, new Vector3(+hw, -hw, 0)));
-            var b4 = Project(this, Vector3.Add(pProj, new Vector3(-hw, -hw, 0)));
+            // then translate
+            var b1 = BarycentricToCartesian(new Vector3(-hw, +hw, 1));
+            var b2 = BarycentricToCartesian(new Vector3(+hw, +hw, 1));
+            var b3 = BarycentricToCartesian(new Vector3(+hw, -hw, 1));
+            var b4 = BarycentricToCartesian(new Vector3(-hw, -hw, 1));
             
             // let's reuse the triangle intersection code
             var t1 = new Triangle(b1, b2, b3);
@@ -80,21 +88,11 @@ namespace IF.Ray.Core.Shapes
             return Color.Blue;
         }
 
-        private static Vector3 Project(Plane plane, Vector3 v)
+        private Vector3 BarycentricToCartesian(Vector3 b)
         {
-            var n = plane.Normal;
-            var p = plane.Position;
-            var numerator = n.X*p.X - n.X*v.X + n.Y*p.Y - n.Y*v.Y + n.Z*p.Z - n.Z*v.Z;
-            var denominator = v.X*v.X + v.Y*v.Y + v.Z*v.Z;
+            // barycentric.x * p0 + barycentric.y * p1 + barycentric.z * p2;
 
-            var t = numerator/denominator;
-
-            return new Vector3
-            {
-                X = v.X + t*n.X,
-                Y = v.Y + t*n.Y,
-                Z = v.Z + t*n.Z
-            };
+            return b.X * _points[0] + b.Y * _points[1] + b.Z * _points[2];
         }
         
         public Color Colorise(IEnumerable<Light> lights, SharpDX.Ray ray, Vector3 point)
