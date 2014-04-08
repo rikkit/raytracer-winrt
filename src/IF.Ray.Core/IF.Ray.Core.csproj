@@ -117,7 +117,6 @@
     <Compile Include="Scene.cs" />
     <Compile Include="SceneBinding.cs" />
     <Compile Include="SceneRenderer.cs" />
-    <Compile Include="Shapes\Plane.cs" />
     <Compile Include="Shapes\Ray.cs" />
     <Compile Include="Shapes\ShapeFactory.cs" />
     <Compile Include="Shapes\Triangle.cs" />

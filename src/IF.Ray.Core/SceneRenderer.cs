@@ -9,7 +9,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using IF.Common.Metro.Progress;
 using IF.Ray.Core.Shapes;
 using SharpDX;
-using Plane = IF.Ray.Core.Shapes.Plane;
 
 namespace IF.Ray.Core
 {
@@ -38,19 +37,25 @@ namespace IF.Ray.Core
 
         public async Task InitialiseSceneAsync()
         {
-            var camera = new Camera(new Vector3(0, 6, -10), new Vector3(0, -6, 10));
+            var idealCameraPosition = new Vector3(0, 8, -20);
+            var cameraPosition = -idealCameraPosition;
+            var camera = new Camera(cameraPosition, -cameraPosition);
             _scene = new Scene(camera);
 
             var square = await _shapeFactory.GetShape<Cube>();
+            square.Shader = Shader.ShaderFromColour(Color.Red);
+
             var cylinder = await _shapeFactory.GetShape<Cylinder>();
+            cylinder.Shader = Shader.ShaderFromColour(Color.Blue);
 
-            var plane = new Shapes.Plane(new Vector3(2,2,2), new Vector3(1,0,0), new Vector3(0,0,1));
+            var plane = await _shapeFactory.GetShape<ObjPlane>();
+            plane.Shader = Shader.ShaderFromColour(Color.ForestGreen);
 
-            _scene.AddBinding(cylinder, new Vector3(-10, 0, 0));
+            _scene.AddBinding(cylinder,Vector3.Zero);
             _scene.AddBinding(square, Vector3.Zero);
             _scene.AddBinding(plane, Vector3.Zero);
 
-            _scene.Lights.Add(new Light(new Vector3(0, 0, -50), Color.White, 1));
+            _scene.Lights.Add(new Light(new Vector3(0, 20, -50), Color.White, 1));
 
             Initialised = true;
         }
@@ -104,7 +109,7 @@ namespace IF.Ray.Core
                 {
                     for (var x = 0; x < width; x++)
                     {
-                        var color = TraceRay(worldViewProj, x, y, width, height);
+                        var color = TraceRay(worldViewProj, x, height - y, width, height);
                         stream.WriteByte(color.B);
                         stream.WriteByte(color.G);
                         stream.WriteByte(color.R);
@@ -124,7 +129,7 @@ namespace IF.Ray.Core
         private Color TraceRay(Matrix proj, int x, int y, int width, int height)
         {
             var cameraScaled = Vector3.Divide(_scene.Camera.Position, _scene.Camera.Scale);
-            
+
             const float pixelSize = 0.1f;
             var u = x - (width * 0.5);
             var v = y - (height * 0.5);

@@ -2,7 +2,6 @@
 using System.Linq;
 using IF.Ray.Core.Shapes;
 using SharpDX;
-using Plane = IF.Ray.Core.Shapes.Plane;
 
 namespace IF.Ray.Core
 {
@@ -34,6 +33,7 @@ namespace IF.Ray.Core
             Origin = new Vector3(0, 0, 0);
             _shapes = new List<SceneBinding>();
             _lights = new List<Light>();
+            Ambient = new Color(0.1f,0.1f,0.1f);
             Camera = camera;
         }
 
@@ -41,7 +41,10 @@ namespace IF.Ray.Core
         {
             Bindings.Add(new SceneBinding(plane, zero));
         }
-        
+
+        public Shader Shader { get; set; }
+        public Color Ambient { get; set; }
+
         public IList<ZBufferItem> Trace(Shapes.Ray ray, Vector3 translation)
         {
             var intersecting = new List<ZBufferItem>();

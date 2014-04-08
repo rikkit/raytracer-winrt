@@ -1,12 +1,39 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SharpDX;
 
 namespace IF.Ray.Core.Shapes
 {
+    public class Shader
+    {
+        public Color Colour { get; set; }
+
+        private Shader()
+        {
+            
+        }
+
+        public static Shader ShaderFromColour(Color color)
+        {
+            var s = new Shader();
+            s.Colour = color;
+            return s;
+        }
+
+        public Color Lambertian(Vector3 lightv, Vector3 normal)
+        {
+            // get the angle between the lightray and the normal of the surface... lambertian reflection
+            var cosAngle = Math.Abs(Vector3.Dot(lightv, normal));
+            return Colour * cosAngle;
+        }
+    }
+
     public class Triangle : IOccluder
     {
         private readonly Vector3[] _vertices;
+
+        public Shader Shader { get; set; }
 
         public Vector3[] Vertices {
             get { return _vertices; }
@@ -100,15 +127,10 @@ namespace IF.Ray.Core.Shapes
                 var normal = Vector3.Cross(edge1, edge2); // TODO take into account point normals
                 normal.Normalize();
 
-                // get the angle between the lightray and the normal of the surface... lambertian reflection
-                var cosAngle = Vector3.Dot(lightv, normal);
-
                 // get the texture colour
-                var triangleColour = Color.Red;
-
-                var scaledColour = triangleColour * cosAngle;
-
-                colour += scaledColour;
+                colour += scene.Ambient;
+                colour += Shader.Lambertian(lightv, normal);
+                //TODO specular
             }
 
             return colour;

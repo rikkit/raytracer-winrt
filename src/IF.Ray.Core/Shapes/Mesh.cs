@@ -7,7 +7,22 @@ namespace IF.Ray.Core.Shapes
 {
     public abstract class Mesh : IOccluder
     {
+        private Shader _shader;
         public IList<Triangle> Triangles { get; set; }
+
+        public Shader Shader
+        {
+            get { return _shader; }
+            set
+            {
+                _shader = value;
+
+                foreach (var triangle in Triangles)
+                {
+                    triangle.Shader = value;
+                }
+            }
+        }
 
         public virtual IList<ZBufferItem> Trace(Shapes.Ray ray, Vector3 translation)
         {
