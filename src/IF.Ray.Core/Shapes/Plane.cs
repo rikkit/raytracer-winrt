@@ -7,6 +7,8 @@ namespace IF.Ray.Core.Shapes
 {
     public class Plane : IOccluder
     {
+        public static Plane XY = new Plane(Vector3.Zero, Vector3.UnitZ);
+
         private Vector3 _normal;
         public Vector3 Position { get; set; }
 
@@ -43,32 +45,31 @@ namespace IF.Ray.Core.Shapes
 
         public IList<ZBufferItem> Trace(Ray ray, Vector3 translation)
         {
-            // distance of the plane from origin
-            var d = Vector3.Distance(Position + translation, Vector3.Zero);
+            // project the plane to XY
+            var pProj = Plane.Project(XY, Position + translation);
+            var hw = Width/2;
 
-            var numerator = -d - Vector3.Dot(ray.Origin, Normal);
-            var denominator = Vector3.Dot(ray.Direction, Normal);
+            // calculate bounds on the xy plane, 
+            // and project each one back to our original plane
+            var b1 = Project(this, Vector3.Add(pProj, new Vector3(-hw, +hw, 0)));
+            var b2 = Project(this, Vector3.Add(pProj, new Vector3(+hw, +hw, 0)));
+            var b3 = Project(this, Vector3.Add(pProj, new Vector3(+hw, -hw, 0)));
+            var b4 = Project(this, Vector3.Add(pProj, new Vector3(-hw, -hw, 0)));
+            
+            // let's reuse the triangle intersection code
+            var t1 = new Triangle(b1, b2, b3);
+            var t2 = new Triangle(b3, b4, b1);
+
+            var tx = t1.Trace(ray, Vector3.Zero).ToList();
+            tx.AddRange(t2.Trace(ray, Vector3.Zero));
 
             var list = new List<ZBufferItem>();
-            if (Math.Abs(numerator) < float.Epsilon && Math.Abs(denominator) < float.Epsilon)
+            if (tx.Any())
             {
-                // ray doesn't intersect plane
-            }
-            else
-            {
-                var t = numerator/denominator;
-                var rayDir = ray.Direction;
-                if (!rayDir.IsNormalized) rayDir.Normalize();
-                var p = ray.Origin + (rayDir * t);
-
-                // the ray intersects the plane, now check if p is in bounds
-
-                if (InBounds(p))
-                {
-                    var z = new ZBufferItem(this, p, translation);
-                    list.Add(z);
-                }
-
+                // there can only be one intersection
+                var intersection = tx.First().Intersection;
+                var z = new ZBufferItem(this, intersection, translation);
+                list.Add(z);
             }
 
             return list;
@@ -94,59 +95,6 @@ namespace IF.Ray.Core.Shapes
                 Y = v.Y + t*n.Y,
                 Z = v.Z + t*n.Z
             };
-        }
-
-        public static Plane XY = new Plane(Vector3.Zero, Vector3.UnitZ);
-
-        /// <summary>
-        /// Tests if the provided point is in the bounds of the plane
-        /// Plane can only be square (provide the width) atm
-        /// </summary>
-        /// <param name="v">Point to test</param>
-        /// <returns>Whether point is on the plane</returns>
-        private bool InBounds(Vector3 v)
-        {
-            // assuming v is already on the plane
-            // project the plane to XY
-            var pProj = Plane.Project(XY, Position);
-            
-            // project v to XY
-            var vProj = Plane.Project(XY, v);
-
-            // now test if testV is in bounds
-            var hw = Width/2;
-            var bounds = new Vector3[4]
-            {
-                Vector3.Add(pProj, new Vector3(-hw, +hw, 0)),
-                Vector3.Add(pProj, new Vector3(+hw, +hw, 0)),
-                Vector3.Add(pProj, new Vector3(+hw, -hw, 0)),
-                Vector3.Add(pProj, new Vector3(-hw, -hw, 0))
-            };
-
-            // make triangles and get the areas..
-            // ABP BCP CDP DAP
-            var areas = bounds.Select((b, i) => TwiceTriangleArea(bounds[i%4], bounds[(i + 1)%4], vProj)).ToList();
-
-            var sum = areas.Sum();
-
-            return areas.All(a => a > 0);
-        }
-
-        /// <summary>
-        /// Returns twice the area of a triangle made by these three points
-        /// </summary>
-        private float TwiceTriangleArea(Vector3 a, Vector3 b, Vector3 p)
-        {
-            return (p.X*b.Y - b.X*p.Y) - (p.X*a.Y - a.X*p.Y) + (b.X*a.Y - a.X*b.Y);
-        }
-
-        public void Reset()
-        {
-        }
-
-        public void TranslateTo(Vector3 position)
-        {
-            Position = position;
         }
         
         public Color Colorise(IEnumerable<Light> lights, SharpDX.Ray ray, Vector3 point)

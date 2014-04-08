@@ -44,7 +44,7 @@ namespace IF.Ray.Core
             var square = await _shapeFactory.GetShape<Cube>();
             var cylinder = await _shapeFactory.GetShape<Cylinder>();
 
-            var plane = new Shapes.Plane(new Vector3(0,1,0), new Vector3(0, 1, 0));
+            var plane = new Shapes.Plane(new Vector3(10,1,0), new Vector3(0, 1, 0));
 
             _scene.AddBinding(cylinder, new Vector3(-10, 0, 0));
             _scene.AddBinding(square, Vector3.Zero);
