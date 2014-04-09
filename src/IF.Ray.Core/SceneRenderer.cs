@@ -14,6 +14,8 @@ namespace IF.Ray.Core
 {
     public class SceneRenderer : IAsyncRenderer
     {
+        public const int AnimationFps = 10;
+
         private readonly IShapeFactory _shapeFactory;
         private Scene _scene;
 
@@ -71,7 +73,10 @@ namespace IF.Ray.Core
             var stream = wb.PixelBuffer.AsStream();
             await Task.Run(() => Render(stream, width, height, rp, token));
 
-            token.Value = 100;
+            if (token != null)
+            {
+                token.Value = 100;
+            }
 
             return wb;
         }
@@ -171,10 +176,9 @@ namespace IF.Ray.Core
 
         public async Task<List<WriteableBitmap>> Animate(int renderWidth, int renderHeight, TimeSpan length, ProgressToken token, ParameterBinding start, ParameterBinding end)
         {
-            const int parallelism = 2; // render this many at a time       
-            const int fps = 24;
-            var totalFrames = (int)length.TotalSeconds*fps;
-
+            const int parallelism = 1; // TODO change _lastRot variables so animations can be rendered in parallel     
+            var totalFrames = (int)length.TotalSeconds*AnimationFps;
+            
             var frames = new List<WriteableBitmap>();
             for (var frame = 0; frame < totalFrames; frame += parallelism)
             {
@@ -183,6 +187,11 @@ namespace IF.Ray.Core
 
                 var rendered = await Task.WhenAll(renderTasks);
                 frames.AddRange(rendered);
+
+                if (token != null)
+                {
+                    token.Value = (int)((float)frame / totalFrames * 100);
+                }
             }
 
             return frames;

@@ -1,6 +1,5 @@
-﻿using System;
+﻿using IF.Common.Metro.Progress;
 using Windows.UI.Core;
-using IF.Common.Metro.Progress;
 
 namespace IF.Ray.Core
 {
@@ -84,7 +83,7 @@ namespace IF.Ray.Core
         }
 
         /// <summary>
-        /// Interpolates between this binding and the provided one
+        /// Linearly nterpolates between this binding and the provided one
         /// </summary>
         /// <param name="end">Binding to interpolate to</param>
         /// <param name="frame">current frame</param>
@@ -92,7 +91,23 @@ namespace IF.Ray.Core
         /// <returns></returns>
         public ParameterBinding Interpolate(ParameterBinding end, int frame, int totalFrames)
         {
-            throw new NotImplementedException();
+            float ratio = (float)frame/totalFrames;
+
+            var interpolated = new ParameterBinding(end.Dispatcher)
+            {
+                RotationX = Lerp(RotationX, end.RotationX, ratio),
+                RotationY = Lerp(RotationY, end.RotationY, ratio),
+                RotationZ = Lerp(RotationZ, end.RotationZ, ratio),
+                Zoom = Lerp(Zoom, end.Zoom, ratio)
+            };
+
+            return interpolated;
+        }
+
+        private static float Lerp(float first, float second, float ratio)
+        {
+            var diff = second - first;
+            return first + diff*ratio;
         }
     }
 }

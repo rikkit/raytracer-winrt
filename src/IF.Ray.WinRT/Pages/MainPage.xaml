@@ -18,7 +18,21 @@
             <ColumnDefinition />
             <ColumnDefinition Width="4*" />
             <ColumnDefinition />
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
+
+        <ListView Grid.Column="3"
+                  ItemsSource="{Binding Frames}"
+                  VerticalAlignment="Top">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Image MinHeight="200"
+    					MinWidth="200"
+    					Stretch="None"
+    					Source="{Binding}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
         <Border Grid.Column="0"
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RequestedTheme="Light">
@@ -28,12 +42,8 @@
                                                 Margin="-12,20,-12,0" />
                 <Button HorizontalAlignment="Stretch"
                         Content="Render"
+                        IsEnabled="{Binding CanRender}"
                         Command="{Binding RenderCommand}" />
-                <Button HorizontalAlignment="Stretch"
-                        Content="Animate"
-                        Command="{Binding RenderCommand}" />
-                <ProgressBar Visibility="{Binding Progress.IsLoading, Converter={StaticResource BooleanToVisibility}}"
-                             Value="{Binding Progress.CurrentInProgress.Value}" />
             </StackPanel>
         </Border>
         <Grid Grid.Column="1">
@@ -41,12 +51,22 @@
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 BorderThickness="1" BorderBrush="White">
-                <Image MinHeight="200"
-                       MinWidth="200"
-                       Stretch="None"
-                       Width="{Binding RenderWidth}"
-                       Height="{Binding RenderHeight}"
-                       Source="{Binding RaytracedImage}" />
+                <Grid>
+                    <Image x:Name="AnimationSurface"
+                           MinHeight="200"
+                           MinWidth="200"
+                           Stretch="None"
+                           Visibility="Collapsed"
+                           Width="{Binding RenderWidth}"
+                           Height="{Binding RenderHeight}"/>
+                    <Image MinHeight="200"
+                           MinWidth="200"
+                           Stretch="None"
+                           Width="{Binding RenderWidth}"
+                           Height="{Binding RenderHeight}"
+                           Source="{Binding RaytracedImage}" />
+
+                </Grid>
             </Border>
             <Grid HorizontalAlignment="Left" Height="400" VerticalAlignment="Bottom" Width="400">
                 <Grid.RowDefinitions>
@@ -71,6 +91,8 @@
                         StepFrequency="10" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="1" TickFrequency="50"
                         TickPlacement="TopLeft" />
             </Grid>
+            <ProgressBar Visibility="{Binding Progress.IsLoading, Converter={StaticResource BooleanToVisibility}}"
+            	Value="{Binding Progress.CurrentInProgress.Value}" VerticalAlignment="Top" Height="10" />
         </Grid>
         <Border Grid.Column="2"
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RequestedTheme="Light">
@@ -79,8 +101,20 @@
                 <common:RenderParametersControl DataContext="{Binding AnimationParameters}"
                                                 Margin="-12,20,-15,0" />
                 <TextBlock TextWrapping="Wrap" Text="Duration" Style="{StaticResource SubtitleTextBlockStyle}" />
-                <TimePicker HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0" Time="0"
+                <TimePicker HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Margin="0,10,0,0"
+                            Time="{Binding AnimationLength, Mode=TwoWay}"
                             ClockIdentifier="24HourClock" />
+                <Button HorizontalAlignment="Stretch"
+                        Content="Animate"
+                        IsEnabled="{Binding CanRender}"
+                        Command="{Binding AnimateCommand}"
+                        Margin="0,20,0,0" />
+                <Button HorizontalAlignment="Stretch"
+                        Content="Show Animation"
+                        Tapped="OnShowAnimationClick"
+                        Margin="0,10,0,0" />
             </StackPanel>
         </Border>
     </Grid>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.UI.Xaml.Media.Imaging;
@@ -17,6 +19,22 @@ namespace IF.Ray.WinRT.ViewModels
         private int _renderWidth;
         private int _renderHeight;
         private TimeSpan _animationLength;
+        private ObservableCollection<WriteableBitmap> _frames;
+
+        public ObservableCollection<WriteableBitmap> Frames
+        {
+            get { return _frames; }
+            set
+            {
+                if (_frames != null && _frames.Equals(value))
+                {
+                    return;
+                }
+
+                _frames = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public bool CanRender
         {
@@ -116,6 +134,8 @@ namespace IF.Ray.WinRT.ViewModels
             RenderHeight = 300;
 
             RenderCommand = new AsyncDelegateCommand(Render);
+            AnimateCommand = new AsyncDelegateCommand(Animate);
+
             RenderParameters = new ParameterBinding(UiDispatcher);
             AnimationParameters = new ParameterBinding(UiDispatcher);
         }
@@ -158,7 +178,7 @@ namespace IF.Ray.WinRT.ViewModels
             CanRender = false;
             var frames = await _sceneRenderer.Animate(RenderWidth, RenderHeight, AnimationLength, token, RenderParameters, AnimationParameters);
 
-            throw new NotImplementedException();
+            Frames = new ObservableCollection<WriteableBitmap>(frames);
             CanRender = true;
 
             Progress.Finalise(token);

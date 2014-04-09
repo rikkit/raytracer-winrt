@@ -90,32 +90,9 @@ namespace IF.Ray.Core.Shapes
 
                     var t = new Triangle(verts[i0], verts[i1], verts[i2], norms[faceIndex]);
                     faceIndex++;
-                    //if (norms.Any())
-                    //{
-                    //    // well this is messy
-
-                    //    if (vals0.Length == 1)
-                    //    {
-                    //        int k0 = int.Parse(vals0[0]) - 1;
-                    //        int k1 = int.Parse(vals1[0]) - 1;
-                    //        int k2 = int.Parse(vals2[0]) - 1;
-
-                    //        t.SetNormals(norms[k0], norms[k1], norms[k2]);
-                    //    }
-                    //    else if (vals0.Length > 2)
-                    //    {
-                    //        int k0 = int.Parse(vals0[2]) - 1;
-                    //        int k1 = int.Parse(vals1[2]) - 1;
-                    //        int k2 = int.Parse(vals2[2]) - 1;
-
-                    //        t.SetNormals(norms[k0], norms[k1], norms[k2]);
-                    //    }
-                    //}
-
                     mesh.Add(t);
                 }
             }
-
 
             return mesh;
         }
