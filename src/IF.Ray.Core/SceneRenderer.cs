@@ -17,7 +17,7 @@ namespace IF.Ray.Core
         private readonly IShapeFactory _shapeFactory;
         private Scene _scene;
 
-        private Quaternion _oldQ;
+        private Matrix _lastRotation;
         
         private float _lastRotX;
         private float _lastRotY;
@@ -31,7 +31,7 @@ namespace IF.Ray.Core
 
         public SceneRenderer()
         {
-            _oldQ = Quaternion.Identity;
+            _lastRotation = Matrix.Identity;
             _shapeFactory = new ShapeFactory();
         }
 
@@ -83,15 +83,14 @@ namespace IF.Ray.Core
             
             // rotation
             // get new *relative* world q
-            var worldQ = Quaternion.RotationYawPitchRoll(rotYDiff, rotXDiff, rotZDiff);
+            var rotationDiff = Matrix.RotationYawPitchRoll(rotYDiff, rotXDiff, rotZDiff);
 
             // transform world q into local rotation q
-            var rotateQ = _oldQ*Quaternion.Invert(_oldQ)*worldQ*_oldQ;
-            _oldQ = rotateQ;
+            var fullRotation = _lastRotation*rotationDiff;
+            _lastRotation = fullRotation;
 
             // get the world projection matrix
-            var worldViewProj = Matrix.RotationQuaternion(rotateQ);
-            worldViewProj.Transpose();
+            fullRotation.Transpose();
 
             // set the camera zoom
             _scene.Camera.Scale = 1 / rp.Zoom;
@@ -109,7 +108,7 @@ namespace IF.Ray.Core
                 {
                     for (var x = 0; x < width; x++)
                     {
-                        var color = TraceRay(worldViewProj, x, height - y, width, height);
+                        var color = TraceRay(fullRotation, x, height - y, width, height);
                         stream.WriteByte(color.B);
                         stream.WriteByte(color.G);
                         stream.WriteByte(color.R);
@@ -146,7 +145,7 @@ namespace IF.Ray.Core
             // get the actual ray
             var ray = new Shapes.Ray(uvPixel, rayDir);
 
-            var items = _scene.Trace(ray, _scene.Origin);
+            var items = _scene.Trace(ray, proj, _scene.Origin);
 
             if (items.Count > 0)
             {
@@ -155,7 +154,7 @@ namespace IF.Ray.Core
                 var closest = items.OrderByDescending(d => d.Distance(ray.Origin)).First();
                 return closest.Primitive.Colorise(_scene, ray, closest.Translation, closest.Intersection);
             }
-            return Color.White;
+            return _scene.Ambient;
         }
 
         public async Task<List<WriteableBitmap>> Animate(int renderWidth, int renderHeight, TimeSpan length, ProgressToken token, ParameterBinding start, ParameterBinding end)

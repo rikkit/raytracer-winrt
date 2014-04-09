@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using IF.Ray.Core.Shapes;
 using SharpDX;
 
@@ -45,12 +44,12 @@ namespace IF.Ray.Core
         public Shader Shader { get; set; }
         public Color Ambient { get; set; }
 
-        public IList<ZBufferItem> Trace(Shapes.Ray ray, Vector3 translation)
+        public IList<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation)
         {
             var intersecting = new List<ZBufferItem>();
             foreach (var binding in Bindings)
             {
-                var bindingIntersecting = binding.Shape.Trace(ray, binding.Position);
+                var bindingIntersecting = binding.Shape.Trace(ray, transform, binding.Position);
                 intersecting.AddRange(bindingIntersecting);
             }
 

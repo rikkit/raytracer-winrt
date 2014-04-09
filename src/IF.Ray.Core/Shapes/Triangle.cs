@@ -53,14 +53,15 @@ namespace IF.Ray.Core.Shapes
         /// <summary>
         /// Möller–Trumbore ray-triangle intersection algorithm
         /// </summary>
-        /// <param name="ray"></param>
-        /// <param name="translation"></param>
-        /// <returns></returns>
-        public IList<ZBufferItem> Trace(Shapes.Ray ray, Vector3 translation)
+        /// <param name="ray">ray to test</param>
+        /// <param name="transform">world rotation transform</param>
+        /// <param name="translation">translation vector</param>
+        /// <returns>list of intersections</returns>
+        public IList<ZBufferItem> Trace(Ray ray, Matrix transform, Vector3 translation)
         {
             var buffer = new List<ZBufferItem>();
 
-            var ts = Vertices.Select(vertex => vertex + translation).ToArray();
+            var ts = Vertices.Select(vertex => Vector3.TransformCoordinate(vertex, transform)).Select(vertex => vertex + translation).ToArray();
 
             // find vectors for two edges sharing ts[0]
             var edge1 = ts[1] - ts[0];

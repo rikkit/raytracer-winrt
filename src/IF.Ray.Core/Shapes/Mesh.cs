@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using IF.Common.Metro.Properties;
 using SharpDX;
 
 namespace IF.Ray.Core.Shapes
@@ -24,13 +22,13 @@ namespace IF.Ray.Core.Shapes
             }
         }
 
-        public virtual IList<ZBufferItem> Trace(Shapes.Ray ray, Vector3 translation)
+        public virtual IList<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation)
         {
             var intersections = new List<ZBufferItem>();
 
             foreach (var primitive in Triangles)
             {
-                var items = primitive.Trace(ray, translation);
+                var items = primitive.Trace(ray, transform, translation);
                 intersections.AddRange(items);
             }
 
