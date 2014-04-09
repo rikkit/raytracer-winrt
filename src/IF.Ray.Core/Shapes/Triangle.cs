@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using SharpDX;
 
 namespace IF.Ray.Core.Shapes
@@ -31,7 +32,7 @@ namespace IF.Ray.Core.Shapes
         public List<ZBufferItem> Trace(Ray ray, Matrix transform, Vector3 translation)
         {
             var buffer = new List<ZBufferItem>();
-
+            
             var ts = Vertices.Select(vertex => Vector3.TransformCoordinate(vertex, transform)).Select(vertex => vertex + translation).ToArray();
 
             // find vectors for two edges sharing ts[0]
@@ -97,6 +98,14 @@ namespace IF.Ray.Core.Shapes
                 var a = Shader.Ambient(light, distance);
 
                 colour += a;
+
+                var lightraydir = intersection - light.Position;
+                lightraydir.Normalize();
+
+                var lightray = new Ray(intersection, lightraydir);
+
+                var lightx = scene.Trace(lightray, transform, translation);
+
                 var l = Shader.Lambertian(Normal, light, lightv, distance);
                 var s = Shader.Specular(Normal, ray.Direction, light, lightv, distance);
 

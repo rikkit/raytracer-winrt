@@ -6,6 +6,7 @@ namespace IF.Ray.Core.Shapes
     public interface IOccluder
     {
         Shader Shader { get; set; }
+        Vector3 Normal { get; }
 
         /// <summary>
         /// Get a list of intersections the ray has with this occluder

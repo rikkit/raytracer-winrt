@@ -22,6 +22,8 @@ namespace IF.Ray.Core.Shapes
             }
         }
 
+        public Vector3 Normal { get; private set; }
+
         public virtual List<ZBufferItem> Trace(Ray ray, Matrix transform, Vector3 translation)
         {
             var intersections = new List<ZBufferItem>();

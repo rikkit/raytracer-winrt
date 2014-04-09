@@ -42,6 +42,8 @@ namespace IF.Ray.Core
 
         public Shader Shader { get; set; }
 
+        public Vector3 Normal { get; private set; }
+
         public List<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation)
         {
             var intersecting = new List<ZBufferItem>();
