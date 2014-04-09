@@ -118,6 +118,7 @@
     <Compile Include="SceneBinding.cs" />
     <Compile Include="SceneRenderer.cs" />
     <Compile Include="Shapes\Ray.cs" />
+    <Compile Include="Shapes\Shader.cs" />
     <Compile Include="Shapes\ShapeFactory.cs" />
     <Compile Include="Shapes\Triangle.cs" />
     <Compile Include="ZBufferItem.cs" />

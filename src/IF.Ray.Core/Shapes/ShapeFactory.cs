@@ -57,7 +57,7 @@ namespace IF.Ray.Core.Shapes
             var texc = new List<Vector3>();
 
             var lines = await FileIO.ReadLinesAsync(file);
-
+            var faceIndex = 0;
             foreach (var line in lines)
             {
                 var toks = line.Split(new char[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
@@ -88,8 +88,8 @@ namespace IF.Ray.Core.Shapes
                     int i1 = int.Parse(vals1[0]) - 1;
                     int i2 = int.Parse(vals2[0]) - 1;
 
-                    var t = new Triangle(verts[i0], verts[i1], verts[i2]);
-
+                    var t = new Triangle(verts[i0], verts[i1], verts[i2], norms[faceIndex]);
+                    faceIndex++;
                     //if (norms.Any())
                     //{
                     //    // well this is messy

@@ -1,34 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using SharpDX;
 
 namespace IF.Ray.Core.Shapes
 {
-    public class Shader
-    {
-        public Color Colour { get; set; }
-
-        private Shader()
-        {
-            
-        }
-
-        public static Shader ShaderFromColour(Color color)
-        {
-            var s = new Shader();
-            s.Colour = color;
-            return s;
-        }
-
-        public Color Lambertian(Vector3 lightv, Vector3 normal)
-        {
-            // get the angle between the lightray and the normal of the surface... lambertian reflection
-            var cosAngle = Math.Abs(Vector3.Dot(lightv, normal));
-            return Colour * cosAngle;
-        }
-    }
-
     public class Triangle : IOccluder
     {
         private readonly Vector3[] _vertices;
@@ -38,16 +13,12 @@ namespace IF.Ray.Core.Shapes
         public Vector3[] Vertices {
             get { return _vertices; }
         }
-        public Vector3[] Normals { get; private set; }
+        public Vector3 Normal { get; private set; }
 
-        public Triangle(Vector3 v0, Vector3 v1, Vector3 v2)
+        public Triangle(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 n)
         {
             _vertices = new[] {v0, v1, v2};
-        }
-        
-        public void SetNormals(Vector3 n0, Vector3 n1, Vector3 n2)
-        {
-            Normals = new[] {n0, n1, n2};
+            Normal = n;
         }
 
         /// <summary>
@@ -121,16 +92,10 @@ namespace IF.Ray.Core.Shapes
             {
                 // get the vector between the light and the point
                 var lightv = Vector3.Normalize(intersection - light.Position);
-
-                var edge1 = ts[1] - ts[0];
-                var edge2 = ts[2] - ts[0];
-
-                var normal = Vector3.Cross(edge1, edge2); // TODO take into account point normals
-                normal.Normalize();
-
+                
                 // get the texture colour
                 colour += scene.Ambient;
-                colour += Shader.Lambertian(lightv, normal);
+                colour += Shader.Lambertian(light, lightv, Normal);
                 //TODO specular
             }
 

@@ -37,9 +37,8 @@ namespace IF.Ray.Core
 
         public async Task InitialiseSceneAsync()
         {
-            var idealCameraPosition = new Vector3(0, 8, -20);
-            var cameraPosition = -idealCameraPosition;
-            var camera = new Camera(cameraPosition, -cameraPosition);
+            var cameraPosition = new Vector3(0, 8, -20);
+            var camera = new Camera(-cameraPosition, cameraPosition);
             _scene = new Scene(camera);
 
             var square = await _shapeFactory.GetShape<Cube>();
