@@ -10,11 +10,11 @@ namespace IF.Ray.Core.Shapes
         /// <summary>
         /// Get a list of intersections the ray has with this occluder
         /// </summary>
-        IList<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation);
+        List<ZBufferItem> Trace(Ray ray, Matrix transform, Vector3 translation);
 
         /// <summary>
         /// Get the colour of the point of intersection
         /// </summary>
-        Color Colorise(Scene scene, Ray ray, Vector3 translation, Vector3 intersection);
+        Color Colorise(Scene scene, Ray ray, Matrix transform, Vector3 translation, Vector3 intersection);
     }
 }

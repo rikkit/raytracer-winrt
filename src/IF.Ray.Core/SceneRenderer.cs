@@ -130,7 +130,7 @@ namespace IF.Ray.Core
             }
         }
 
-        private Color TraceRay(Matrix proj, int x, int y, int width, int height)
+        private Color TraceRay(Matrix transform, int x, int y, int width, int height)
         {
             var camPositionScaled = Vector3.Divide(_scene.Camera.Position, _scene.Camera.Scale);
 
@@ -157,14 +157,14 @@ namespace IF.Ray.Core
             // get the actual ray
             var ray = new Shapes.Ray(uv, rayDir);
 
-            var items = _scene.Trace(ray, proj, _scene.Origin);
+            var items = _scene.Trace(ray, transform, _scene.Origin);
 
             if (items.Count > 0)
             {
                 // get the colour of the closest item
 
                 var closest = items.OrderByDescending(d => d.Distance(ray.Origin)).First();
-                return closest.Primitive.Colorise(_scene, ray, closest.Translation, closest.Intersection);
+                return closest.Primitive.Colorise(_scene, ray, transform, closest.Translation, closest.Intersection);
             }
             return _scene.Ambient();
         }

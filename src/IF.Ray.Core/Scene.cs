@@ -42,7 +42,7 @@ namespace IF.Ray.Core
 
         public Shader Shader { get; set; }
 
-        public IList<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation)
+        public List<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation)
         {
             var intersecting = new List<ZBufferItem>();
             foreach (var binding in Bindings)
@@ -54,7 +54,7 @@ namespace IF.Ray.Core
             return intersecting;
         }
 
-        public Color Colorise(Scene scene, Shapes.Ray ray, Vector3 translation, Vector3 intersection)
+        public Color Colorise(Scene scene, Shapes.Ray ray, Matrix transform, Vector3 translation, Vector3 intersection)
         {
             throw new System.NotImplementedException();
         }

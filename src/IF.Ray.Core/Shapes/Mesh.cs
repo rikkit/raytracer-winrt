@@ -22,7 +22,7 @@ namespace IF.Ray.Core.Shapes
             }
         }
 
-        public virtual IList<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation)
+        public virtual List<ZBufferItem> Trace(Ray ray, Matrix transform, Vector3 translation)
         {
             var intersections = new List<ZBufferItem>();
 
@@ -35,7 +35,7 @@ namespace IF.Ray.Core.Shapes
             return intersections;
         }
 
-        public Color Colorise(Scene scene, Ray ray, Vector3 translation, Vector3 intersection)
+        public Color Colorise(Scene scene, Ray ray, Matrix transform, Vector3 translation, Vector3 intersection)
         {
             // this is never called
             return Color.BlanchedAlmond;

@@ -28,7 +28,7 @@ namespace IF.Ray.Core.Shapes
         /// <param name="transform">world rotation transform</param>
         /// <param name="translation">translation vector</param>
         /// <returns>list of intersections</returns>
-        public IList<ZBufferItem> Trace(Ray ray, Matrix transform, Vector3 translation)
+        public List<ZBufferItem> Trace(Ray ray, Matrix transform, Vector3 translation)
         {
             var buffer = new List<ZBufferItem>();
 
@@ -64,7 +64,7 @@ namespace IF.Ray.Core.Shapes
             // then intersection is outside the triangle
             if (v < 0f || u + v > 1f)
             {
-                return new ZBufferItem[0];
+                return new List<ZBufferItem>();
             }
 
             var t = Vector3.Dot(edge2, Q)*invDet;
@@ -83,7 +83,7 @@ namespace IF.Ray.Core.Shapes
         /// <summary>
         /// Get the colour at this point on this triangle
         /// </summary>
-        public Color Colorise(Scene scene, Shapes.Ray ray, Vector3 translation, Vector3 intersection)
+        public Color Colorise(Scene scene, Shapes.Ray ray, Matrix transform, Vector3 translation, Vector3 intersection)
         {
             var colour = new Color();
             
@@ -95,10 +95,11 @@ namespace IF.Ray.Core.Shapes
 
                 // get the texture colour
                 var a = Shader.Ambient(light, distance);
+
+                colour += a;
                 var l = Shader.Lambertian(Normal, light, lightv, distance);
                 var s = Shader.Specular(Normal, ray.Direction, light, lightv, distance);
 
-                colour += a;
                 colour += l;
                 colour += s;
             }
