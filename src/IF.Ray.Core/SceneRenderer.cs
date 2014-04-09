@@ -127,23 +127,30 @@ namespace IF.Ray.Core
 
         private Color TraceRay(Matrix proj, int x, int y, int width, int height)
         {
-            var cameraScaled = Vector3.Divide(_scene.Camera.Position, _scene.Camera.Scale);
+            var camPositionScaled = Vector3.Divide(_scene.Camera.Position, _scene.Camera.Scale);
 
-            const float pixelSize = 0.1f;
-            var u = x - (width * 0.5);
-            var v = y - (height * 0.5);
+            // work out the orientation of the image plane
+            var camDir = _scene.Camera.Target - camPositionScaled;
+            var xDir = Vector3.Cross(Vector3.UnitY, camDir);
+            var yDir = Vector3.Cross(camDir, xDir); // now correct the up dir
+            camDir.Normalize();
+            xDir.Normalize();
+            yDir.Normalize();
 
-            //TODO this isn't right
-            var uvPixel = new Vector3(
-                cameraScaled.X + (float)u * pixelSize,
-                cameraScaled.Y + (float)v * pixelSize,
-                cameraScaled.Z);
+            // now get the uv coordinates on our image plane, scaled by unitsize
+            const float unitsize = 0.1f;
+            var u = (float)((x - 0.5 * width) * unitsize);
+            var v = (float)((y - 0.5 * height) * unitsize);
 
-            // get the direction of the ray
-            var rayDir = _scene.Camera.Target - uvPixel;
+            // now move u units along x, v units along y, starting at camposition
+            var uv = camPositionScaled + u * xDir + v * yDir;
+
+            // now the direction of the ray from uv to the target
+            var rayDir = _scene.Camera.Target - uv;
+            rayDir.Normalize();
 
             // get the actual ray
-            var ray = new Shapes.Ray(uvPixel, rayDir);
+            var ray = new Shapes.Ray(uv, rayDir);
 
             var items = _scene.Trace(ray, proj, _scene.Origin);
 
