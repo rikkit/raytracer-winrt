@@ -54,7 +54,13 @@ namespace IF.Ray.Core
             _scene.AddBinding(square, Vector3.Zero);
             _scene.AddBinding(plane, Vector3.Zero);
 
-            _scene.Lights.Add(new Light(new Vector3(0, 20, -50), Color.White, 1));
+            _scene.Lights.Add(new Light(new Vector3(0, 10, 0), Color.White, 10));
+            _scene.Lights.Add(new Light(new Vector3(-10, 10, 0), Color.White, 10));
+            _scene.Lights.Add(new Light(new Vector3(10, 10, 0), Color.White, 10));
+            _scene.Lights.Add(new Light(new Vector3(0, 10, -10), Color.White, 100));
+            _scene.Lights.Add(new Light(new Vector3(0, 10, 10), Color.White, 10));
+
+            _scene.Shader = Shader.ShaderFromColour(Color.Black);
 
             Initialised = true;
         }
@@ -160,7 +166,7 @@ namespace IF.Ray.Core
                 var closest = items.OrderByDescending(d => d.Distance(ray.Origin)).First();
                 return closest.Primitive.Colorise(_scene, ray, closest.Translation, closest.Intersection);
             }
-            return _scene.Ambient;
+            return _scene.Ambient();
         }
 
         public async Task<List<WriteableBitmap>> Animate(int renderWidth, int renderHeight, TimeSpan length, ProgressToken token, ParameterBinding start, ParameterBinding end)

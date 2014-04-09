@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using System;
+using SharpDX;
 
 namespace IF.Ray.Core
 {
@@ -7,7 +8,7 @@ namespace IF.Ray.Core
         public Vector3 Position { get; set; }
 
         /// <summary>
-        /// Value between 0 and 1
+        /// Brighter lights have higher intensity
         /// </summary>
         public float Intensity { get; set; }
 
@@ -18,6 +19,17 @@ namespace IF.Ray.Core
             Position = position;
             Colour = color;
             Intensity = intensity;
+        }
+
+        /// <summary>
+        /// Inverse square law
+        /// </summary>
+        /// <param name="distance"></param>
+        /// <returns></returns>
+        public float IntensityAt(float distance)
+        {
+            var i = (float) Math.Min(1, Intensity*(1/Math.Pow(distance,2)));
+            return i;
         }
     }
 }

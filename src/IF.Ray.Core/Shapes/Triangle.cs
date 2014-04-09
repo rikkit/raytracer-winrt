@@ -86,19 +86,23 @@ namespace IF.Ray.Core.Shapes
         public Color Colorise(Scene scene, Shapes.Ray ray, Vector3 translation, Vector3 intersection)
         {
             var colour = new Color();
-            var ts = Vertices.Select(vertex => vertex + translation).ToArray();
-
+            
             foreach (var light in scene.Lights)
             {
                 // get the vector between the light and the point
                 var lightv = Vector3.Normalize(intersection - light.Position);
-                
-                // get the texture colour
-                colour += scene.Ambient;
-                colour += Shader.Lambertian(light, lightv, Normal);
-                //TODO specular
-            }
+                var distance = Vector3.Distance(intersection, light.Position);
 
+                // get the texture colour
+                var a = Shader.Ambient(light, distance);
+                var l = Shader.Lambertian(Normal, light, lightv, distance);
+                var s = Shader.Specular(Normal, ray.Direction, light, lightv, distance);
+
+                colour += a;
+                colour += l;
+                colour += s;
+            }
+            
             return colour;
         }
     }

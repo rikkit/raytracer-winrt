@@ -32,7 +32,6 @@ namespace IF.Ray.Core
             Origin = new Vector3(0, 0, 0);
             _shapes = new List<SceneBinding>();
             _lights = new List<Light>();
-            Ambient = new Color(0.1f,0.1f,0.1f);
             Camera = camera;
         }
 
@@ -42,7 +41,6 @@ namespace IF.Ray.Core
         }
 
         public Shader Shader { get; set; }
-        public Color Ambient { get; set; }
 
         public IList<ZBufferItem> Trace(Shapes.Ray ray, Matrix transform, Vector3 translation)
         {
@@ -59,6 +57,16 @@ namespace IF.Ray.Core
         public Color Colorise(Scene scene, Shapes.Ray ray, Vector3 translation, Vector3 intersection)
         {
             throw new System.NotImplementedException();
+        }
+
+        public Color Ambient()
+        {
+            var ambient = new Color();
+            foreach (var light in _lights)
+            {
+                ambient += Shader.Ambient(light, 1);
+            }
+            return ambient;
         }
     }
 }
