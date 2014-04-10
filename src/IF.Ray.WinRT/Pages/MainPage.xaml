@@ -26,8 +26,8 @@
                   VerticalAlignment="Top">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Image MinHeight="200"
-    					MinWidth="200"
+                    <Image MinHeight="50"
+    					MinWidth="50"
     					Stretch="None"
     					Source="{Binding}" />
                 </DataTemplate>
@@ -53,14 +53,14 @@
                 BorderThickness="1" BorderBrush="White">
                 <Grid>
                     <Image x:Name="AnimationSurface"
-                           MinHeight="200"
-                           MinWidth="200"
+                           MinHeight="50"
+                           MinWidth="50"
                            Stretch="None"
                            Visibility="Collapsed"
                            Width="{Binding RenderWidth}"
                            Height="{Binding RenderHeight}"/>
-                    <Image MinHeight="200"
-                           MinWidth="200"
+                    <Image MinHeight="50"
+                           MinWidth="50"
                            Stretch="None"
                            Width="{Binding RenderWidth}"
                            Height="{Binding RenderHeight}"
@@ -79,14 +79,14 @@
                 </Grid.ColumnDefinitions>
                 <Slider x:Name="HeightSlider"
                         Value="{Binding RenderHeight, Mode=TwoWay}"
-                        Minimum="200"
-                        Maximum="800"
+                        Minimum="50"
+                        Maximum="600"
                         Orientation="Vertical"
                         StepFrequency="10" HorizontalAlignment="Left" TickFrequency="50" TickPlacement="BottomRight" />
                 <Slider x:Name="WidthSlider"
                         Value="{Binding RenderWidth, Mode=TwoWay}"
-                        Minimum="200"
-                        Maximum="800"
+                        Minimum="50"
+                        Maximum="600"
                         Orientation="Horizontal"
                         StepFrequency="10" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="1" TickFrequency="50"
                         TickPlacement="TopLeft" />

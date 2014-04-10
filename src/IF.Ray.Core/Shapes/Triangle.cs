@@ -99,18 +99,23 @@ namespace IF.Ray.Core.Shapes
 
                 colour += a;
 
-                var lightraydir = intersection - light.Position;
+                var lightraydir = light.Position - intersection;
                 lightraydir.Normalize();
 
-                var lightray = new Ray(intersection, lightraydir);
+                // don't intersect with the object i'm on
+                var lightrayorigin = intersection + 1*lightraydir;
+                var lightray = new Ray(lightrayorigin, lightraydir);
 
                 var lightx = scene.Trace(lightray, transform, translation);
 
-                var l = Shader.Lambertian(Normal, light, lightv, distance);
-                var s = Shader.Specular(Normal, ray.Direction, light, lightv, distance);
+                if (!lightx.Any())
+                {
+                    var l = Shader.Lambertian(Normal, light, lightv, distance);
+                    var s = Shader.Specular(Normal, ray.Direction, light, lightv, distance);
 
-                colour += l;
-                colour += s;
+                    colour += l;
+                    colour += s;
+                }
             }
             
             return colour;
