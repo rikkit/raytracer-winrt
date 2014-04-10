@@ -103,7 +103,7 @@ namespace IF.Ray.Core.Shapes
                 lightraydir.Normalize();
 
                 // don't intersect with the object i'm on
-                var lightrayorigin = intersection + 1*lightraydir;
+                var lightrayorigin = intersection + 0.01f*lightraydir;
                 var lightray = new Ray(lightrayorigin, lightraydir);
 
                 var lightx = scene.Trace(lightray, transform, translation);

@@ -51,7 +51,7 @@ namespace IF.Ray.Core
             cylinder.Shader = Shader.MattShaderFromColour(Color.Blue);
 
             var plane = await _shapeFactory.GetShape<ObjPlane>();
-            plane.Shader = Shader.MattShaderFromColour(Color.ForestGreen);
+            plane.Shader = Shader.MattShaderFromColour(Color.Wheat);
 
             _scene.AddBinding(cylinder,Vector3.Zero);
             _scene.AddBinding(square, Vector3.Zero);
@@ -60,7 +60,7 @@ namespace IF.Ray.Core
             _scene.Lights.Add(new Light(new Vector3(0, 10, 0), Color.White, 10));
             _scene.Lights.Add(new Light(new Vector3(-10, 10, 0), Color.White, 10));
             _scene.Lights.Add(new Light(new Vector3(10, 10, 0), Color.White, 10));
-            _scene.Lights.Add(new Light(new Vector3(0, 10, -10), Color.White, 100));
+            _scene.Lights.Add(new Light(new Vector3(20, 10, -10), Color.White, 100));
             _scene.Lights.Add(new Light(new Vector3(0, 10, 10), Color.White, 10));
 
             _scene.Shader = Shader.MattShaderFromColour(Color.Black);
@@ -162,24 +162,38 @@ namespace IF.Ray.Core
 
             // get the actual ray
             var ray = new Shapes.Ray(uv, rayDir);
-            //var reflectance = 0f;
+            
             var bounces = new List<ZBufferItem>();
-            var reflectance = 1f;
-            const int iterations = 1;
+            const int iterations = 2;
             for (var i = 0; i < iterations; i++)
             {
                 var items = _scene.Trace(ray, transform, _scene.Origin);
 
-                if (items.Any() && reflectance > 0.2f)
+                if (items.Any())
                 {
                     var closest = items.OrderByDescending(d => d.Distance(ray.Origin)).First();
 
                     bounces.Add(closest);
 
-                    var reflectedRay = ray.Direction - 2*Vector3.Dot(ray.Direction, closest.Primitive.Normal)*closest.Primitive.Normal;
-                    reflectedRay.Normalize();
+                    if (closest.Primitive.Shader.IsReflective)
+                    {
+                        var reflectedRay = -ray.Direction -
+                                           2*Vector3.Dot(-ray.Direction, closest.Primitive.Normal)*
+                                           closest.Primitive.Normal;
+                        reflectedRay.Normalize();
 
-                    ray = new Shapes.Ray(closest.Intersection, reflectedRay);
+                        // don't want to intersect the reflection plane
+                        var reflectionOrigin = closest.Intersection + 0.01f*reflectedRay;
+
+                        ray = new Shapes.Ray(reflectionOrigin, reflectedRay);
+
+                        //var reflections = _scene.Trace(ray, transform, _scene.Origin);
+
+                        //if (reflections.Any())
+                        //{
+                        //    bounces.Add(reflections.OrderByDescending(d => d.Distance(ray.Origin)).First());
+                        //}
+                    }
                 }
             }
 
@@ -190,9 +204,7 @@ namespace IF.Ray.Core
                 {
                     var closestColour = bounce.Primitive.Colorise(_scene, ray, transform, bounce.Translation, bounce.Intersection);
 
-                    reflectance *= bounce.Primitive.Shader.Reflectance;
-                    var scaledColour = Color.Scale(closestColour, reflectance);
-                    var avgColour = Color.Scale(scaledColour, 1f/bounces.Count);
+                    var avgColour = Color.Scale(closestColour, 1f/bounces.Count);
                     c += avgColour;
                 }
                 c.A = 255;

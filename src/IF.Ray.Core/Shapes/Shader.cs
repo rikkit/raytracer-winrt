@@ -8,18 +8,28 @@ namespace IF.Ray.Core.Shapes
         private const float AmbientFraction = 0.1f;
 
         public Color Colour { get; set; }
-        public float Reflectance { get; set; }
+        public bool IsReflective { get; set; }
 
         private Shader()
         {
             
         }
 
+        public static Shader MirrorShader()
+        {
+            var s = new Shader
+            {
+                IsReflective = true,
+                Colour = new Color(1f,1f,1f,0.2f)
+            };
+            return s;
+        }
+
         public static Shader MattShaderFromColour(Color color)
         {
             var s = new Shader();
             s.Colour = color;
-            s.Reflectance = 0.8f;
+            s.IsReflective = false;
             return s;
         }
 
